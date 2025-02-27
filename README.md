@@ -2,9 +2,12 @@
 
 ## 초기 세팅 및 명령어 정리
 1. **의존성 설치**
-- ***npm run dev*** - 개발환경 실행 (자동 재시작 Nodemon)
-- ***npm run start:dev*** - 개발환경 실행
-- ***npm run start:prod*** - 배포환경 실행
+- ***yarn install*** - 패키지 의존성 설치
+- ***yarn add 패키지명*** - 새로운 패키지 추가
+- ***yarn remove 패키지명*** - 패키지 제거
+- ***yarn dev*** - 개발환경 실행 (자동 재시작 Nodemon)
+- ***yarn start:dev*** - 개발환경 실행
+- ***yarn start:prod*** - 배포환경 실행
 
 2. **환경변수 세팅**
 루트에 환경변수 파일 생성 & 환경변수 파일 내용 노션 **We Band/총괄보드/백엔드 개발/환경변수 정리/** 에서 확인 가능
@@ -12,6 +15,10 @@
 - ***.env.dev*** - 개발용 환경 변수 
 - ***.env.prod*** - 배포용 환경 변수
 
+3. **Prisma 세팅**
+- ***yarn prisma init*** - Prisma를 사용하기 위한 초기 설정을 생성
+- ***yarn prisma db push*** - schema.prisma 파일에 정의된 설정값을 **실제 데이터베이스**에 반영(push) (데이터베이스 구조를 변경하거나 새로운 테이블을 생성)
+- ***yarn prisma generate*** - Prisma Client를 생성하거나 업데이트. schema.prisma 파일에 변경 사항이 생겼거나, 데이터베이스 구조가 변경되었을 때, 이 명령어를 사용해 Prisma Client를 최신 상태로 유지
 
 **서비스 소개:**  
 추후 작성
