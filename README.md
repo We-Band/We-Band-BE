@@ -65,6 +65,7 @@
 │   ├── routes/        # API 라우팅
 │   ├── middlewares/   # 인증 및 기타 미들웨어
 │   ├── config/        # 환경 설정
+│   ├── services/      # 비즈니스 로직 설정
 │   └── app.js         # Express 설정
 │── .env               # 환경 변수 파일
 │── package.json       # 프로젝트 의존성 및 설정
