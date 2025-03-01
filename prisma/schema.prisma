@@ -13,10 +13,92 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User { // 예시용 모델 (카카오 로그인시 비밀번호 필요 X)
-  userID          Int     @id @default(autoincrement())
-  kakaoID         String  @unique
-  email           String  @unique
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @default(now())
+
+model Club {
+  club_id     Int             @id @default(autoincrement())
+  club_name   String
+  clubLeader  Int
+  club_code   String
+  schedules   ClubSchedule[]
+  members     ClubMember[]
+  teams       Team[]
+}
+
+model ClubSchedule {
+  club_schedule_id   Int       @id @default(autoincrement())
+  club_id            Int
+  club_schedule_time DateTime
+  club_schedule_title String?
+  club_schedule_place String?
+  created_at         DateTime  @default(now())
+  club               Club      @relation(fields: [club_id], references: [club_id])
+}
+
+model ClubMember {
+  club_id Int
+  user_id Int
+  club    Club    @relation(fields: [club_id], references: [club_id])
+  user    WeBandUser @relation(fields: [user_id], references: [user_id])
+
+  @@id([club_id, user_id])
+}
+
+model MySchedule {
+  schedule_id        Int       @id @default(autoincrement())
+  schedule_title     String
+  schedule_time      DateTime
+  isPublic           Boolean   @default(false)
+  schedule_place     String?
+  schedule_participated String?
+  user_id            Int
+  created_at         DateTime  @default(now())
+  user               WeBandUser @relation(fields: [user_id], references: [user_id])
+}
+
+model Team {
+  team_id     Int            @id @default(autoincrement())
+  created_by  Int
+  team_name   String
+  club_id     Int
+  created_at  DateTime       @default(now())
+  club        Club           @relation(fields: [club_id], references: [club_id])
+  creator     WeBandUser     @relation(fields: [created_by], references: [user_id])
+  members     TeamMember[]
+  schedules   TeamSchedule[]
+}
+
+model TeamMember {
+  team_id Int
+  user_id Int
+  team    Team    @relation(fields: [team_id], references: [team_id])
+  user    WeBandUser @relation(fields: [user_id], references: [user_id])
+
+  @@id([team_id, user_id])
+}
+
+model TeamSchedule {
+  team_schedule_id   Int       @id @default(autoincrement())
+  team_schedule_title String
+  team_schedule_time DateTime
+  schedule_place     String?
+  schedule_participated String?
+  team_id            Int
+  created_by         Int
+  created_at         DateTime  @default(now())
+  team               Team      @relation(fields: [team_id], references: [team_id])
+  creator            WeBandUser @relation(fields: [created_by], references: [user_id])
+}
+
+model WeBandUser {
+  user_id      Int           @id @default(autoincrement())
+  kakao_id     BigInt        @unique
+  profile_img  String?
+  user_name    String
+  email        String        @unique
+  clubMembers  ClubMember[]
+  teamCreators Team[]
+  teamMembers  TeamMember[]
+  schedules    MySchedule[]
+  clubSchedules ClubSchedule[]
+  teamSchedules TeamSchedule[]
 }
