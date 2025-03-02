@@ -31,7 +31,7 @@ const Logger = winston.createLogger({
             maxFiles: '2w',  //파일 보관 기간
         }),
     ]
-});
+}); // 일반적인 로그 관리
 
 const specificLogger = winston.createLogger({
     level: 'info', 
@@ -57,6 +57,6 @@ const specificLogger = winston.createLogger({
             maxFiles: '1m',  
         })
     ]
-});
+}); //특정 로그 관리(클럽추가요청, 유저탈퇴요청 등)
 
 export { Logger, specificLogger };
