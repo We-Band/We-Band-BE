@@ -11,6 +11,6 @@ async function main() {
   } finally {
     await prisma.$disconnect();
   }
-}
+} //prisma test code
 
 main();
