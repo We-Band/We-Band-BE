@@ -101,6 +101,5 @@ model WeBandUser {
   teamCreators Team[]
   teamMembers  TeamMember[]
   schedules    MySchedule[]
-  clubSchedules ClubSchedule[]
   teamSchedules TeamSchedule[]
 }
