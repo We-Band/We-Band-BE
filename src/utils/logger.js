@@ -47,6 +47,7 @@ const stream = {
 };
 
 //morgan 미들웨어 (개발 환경에서만 작동)
+//morgan은 api요청에 대한 로그 기록
 const morganMiddleware = process.env.NODE_ENV === 'dev' 
     ? morgan('tiny', { stream }) 
     : (req, res, next) => next();
