@@ -9,7 +9,7 @@ const logLevel = process.env.NODE_ENV === 'production' ? 'info' : 'debug';
 const logDir = path.join(appRoot.path, 'logs');
 
 const Logger = winston.createLogger({
-    leve: logLevel, //dev: debug, prod: info
+    level: logLevel, //dev: debug, prod: info
     format: winston.format.combine(
         winston.format.timestamp(),
         winston.format.printf(info => `${info.timestamp} [${info.level}]: ${info.message}`)
@@ -29,12 +29,12 @@ const Logger = winston.createLogger({
             zippedArchive: true,  
             maxSize: '20m',  //파일 최대 크기
             maxFiles: '2w',  //파일 보관 기간
-        }),
+        })
     ]
 }); // 일반적인 로그 관리
 
 const specificLogger = winston.createLogger({
-    level: 'info', 
+    level: logLevel, 
     format: winston.format.combine(
         winston.format.timestamp(),
         winston.format.printf(info => `${info.timestamp} [${info.level}]: ${info.message}`)
@@ -48,7 +48,6 @@ const specificLogger = winston.createLogger({
         }),
 
         new winstonDaily({
-            level: 'info', 
             datePattern: 'YYYY-MM',  //월 단위로 회전
             dirname: logDir,  
             filename: 'specific-%DATE%.log',  
