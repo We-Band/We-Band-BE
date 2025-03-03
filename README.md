@@ -60,7 +60,7 @@
 
 - **morganMiddleware** - HTTP요청 로그 기록
 
-  info: GET /user 304 - - 1.382 ms - 이런 형식으로 로그 기록
+  info: GET /user 304 - - 1.382 ms   이런 형식으로 로그 기록
 
 ---
 
