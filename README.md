@@ -36,6 +36,33 @@
 
 ---
 
+## 📌 logger사용법
+
+-console.log 대신 사용, 개발/배포 환경마다 다르게 로그를 관리하기 위해 사용 
+  
+  배포(prod)환경에서는 로그레벨 info로 /logs폴더에 파일형태로 저장됨
+  개발(dev)환경에서는 로그레벨 debug로 콘솔에 로그남김, morgan으로 api요청 로그 기록
+
+- **logger** - 일반적인 로그 기록
+  import { logger } from './utils/logger.js';
+  
+  logger.info('This is an info message');  // info 로그
+  logger.debug('This is a debug message');  // debug 로그
+  logger.error('This is an error message');  // error 로그
+  logger.warn('This is a warning message');  // warn 로그
+
+- **specificLogger** - 특정 이벤트 로그 기록(클럽 추가 요청, 유저 탈퇴 기록 등)
+
+  import { specificLogger } from './utils/logger.js';
+
+  specificLogger.info('This is a specific log');
+  specificLogger.error('This is an error message');
+
+- **morganMiddleware** - HTTP요청 로그 기록
+
+  info: GET /user 304 - - 1.382 ms - 이런 형식으로 로그 기록
+
+---
 
 ## 👨‍👩‍👧‍👦 팀원
 
