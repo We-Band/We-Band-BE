@@ -7,12 +7,13 @@ import userRoutes from './routes/userRoutes.js';
 dotenv.config();
 
 const app = express();
+const router = express.Router(); 
 
 app.use(morganMiddleware); //api 로그 기록(개발 환경에서만)
 
 // Express 애플리케이션 설정
 app.use(cookieParser());
-app.use('/users', userRoutes);
+app.use('/user', userRoutes);
 
 // 환경 별 .env 파일 동작
 logger.info('Current Environment: ' + process.env.NODE_ENV);
