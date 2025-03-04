@@ -1,8 +1,8 @@
-import express from "express";
-import { prisma } from "../utils/prisma.js"; 
+import express from "express"; 
 import { logger } from "../utils/logger.js";  
 const router = express.Router();
 
+// 동아리 가입 API (POST /clubs/:clubId/join)
 export const joinClub = async (req, res) => {
     try {
         const { clubId } = req.params; 
@@ -57,3 +57,9 @@ export const joinClub = async (req, res) => {
         return res.status(500).json({ message: "서버 오류가 발생했습니다." });
     }
 };
+
+export const withdrawClub = async (req, res, next) => {
+    try {
+    } catch (err) {}
+  };
+//동아리 탈퇴 API (DELETE /clubs/:clubId/leave)

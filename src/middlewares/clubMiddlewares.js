@@ -4,7 +4,7 @@ import { logger } from "../utils/logger.js";
 const prisma = new PrismaClient();
 
 /**동아리 가입여부 검증 */
-export const isJoined = async (req, res, next) => {
+export const isJoinedClub = async (req, res, next) => {
     try {
         const { clubId } = req.parmas;
         const userId = req.userId;

@@ -1,9 +1,11 @@
 import express from "express";
-import { isJoinedClub } from "../middlewares/clubMiddleware.js"; 
-import { joinClub, isClubExist } from "../controllers/clubController.js"; 
+import { isJoinedClub, isClubExist  } from "../middlewares/clubMiddlewares.js"; 
+import { joinClub } from "../controllers/clubControllers.js"; 
 
 const router = express.Router();
 
-router.post("/clubs/:clubId/join", isJoinedClub, isClubExist, joinClub);
+router.post("/:clubId/join", isJoinedClub, isClubExist, joinClub);
+
+//router.delete("/:clubId/leave", isJoinedClub, isClubExist, withdrawClub);
 
 export default router;
