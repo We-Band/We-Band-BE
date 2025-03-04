@@ -53,7 +53,7 @@ const morganMiddleware = process.env.NODE_ENV === 'dev'
     : (req, res, next) => next();
 
 
-//특정 로그 관리(클럽추가요청, 유저탈퇴요청 등)
+//특정 로그 관리(클럽추가요청, 유저가입, 유저탈퇴요청 등)
 const specificLogger = winston.createLogger({
     level: logLevel, 
     format: winston.format.combine(
