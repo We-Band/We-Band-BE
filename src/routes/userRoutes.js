@@ -2,6 +2,8 @@ import express from "express";
 import { logger } from "../utils/logger.js";
 import { getCurrentUser } from "../controllers/userControllers.js";
 import { authMiddleware } from "../middlewares/authMiddlewares.js";
+import { signUpUser } from "../controllers/userControllers.js";
+import { isJoined } from "../middlewares/userMiddlewares.js";
 
 const router = express.Router();
 
@@ -12,5 +14,7 @@ router.get("/test", async (req, res) => {
   res.status(200).json({ message: "테스트 라우트" });
   logger.info("테스트 라우트");
 });
+
+router.post("/signup", isJoined, signUpUser);
 
 export default router;

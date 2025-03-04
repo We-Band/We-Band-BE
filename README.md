@@ -51,7 +51,7 @@
   logger.error('This is an error message');  // error 로그
   logger.warn('This is a warning message');  // warn 로그
 
-- **specificLogger** - 특정 이벤트 로그 기록(클럽 추가 요청, 유저 탈퇴 기록 등)
+- **specificLogger** - 특정 이벤트 로그 기록(클럽 추가 요청, 유저 가입, 유저 탈퇴)
 
   import { specificLogger } from './utils/logger.js';
 
@@ -61,6 +61,11 @@
 - **morganMiddleware** - HTTP요청 로그 기록
 
   info: GET /user 304 - - 1.382 ms   이런 형식으로 로그 기록
+
+---
+## 📌 jwtToken에서 userId 가지고 오기
+  -const userId = req.userId; 사용
+  -app.js에서 설정해놔서 따로 router에 미들웨어 추가할 필요없음
 
 ---
 
