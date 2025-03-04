@@ -1,25 +1,23 @@
-import { PrismaClient } from "@prisma/client";
 import { logger } from "../utils/logger.js";
+import jwt from "jsonwebtoken";
 
-const prisma = new PrismaClient();
-
-/**이미 회원가입 여부 검증 */
-export const isJoined = async (req, res, next) => {
+export const authenticateUser = (req, res, next) => {
     try {
-        const { email } = req.body;
+        const token = req.headers.authorization?.split(" ")[1];
 
-        const existingUser = await prisma.weBandUser.findUnique({
-            where: { email },
-        });
+        if (!token) {
+            logger.info("토큰 인증 실패");
+            return res.status(401).json({ message: "인증이 필요합니다." });
+        }
 
-        if (existingUser) {
-            return res.status(409).json({ message: "이미 가입된 이메일입니다." });
-        }  
+        // JWT 검증
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.userId = decoded.userId // req.user에 userId 저장
 
-        logger.info("회원 가입 여부 검증 완료", { email });
-        next(); //
+        next();
     } catch (error) {
-        logger.error(`회원 가입 여부 검증 실패: ${error.message}`, { error });
-        return res.status(500).json({ message: "서버 오류 발생" });
+        logger.error(`토큰인증 중 오류 발생: ${error.message}`, { error });
+        return res.status(403).json({ message: "토큰 인증 중 오류 발생"});
     }
-};
+}
+
