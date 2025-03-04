@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { generateAccessToken, generateRefreshToken } from "../services/jwtServices.js";
 import axios from "axios";
+import { logger } from "../utils/logger.js";
 
 const prisma = new PrismaClient();
 
@@ -16,7 +17,7 @@ export const redirectToKakaoLogin = (req, res) => {
 export const handleKakaoCallback = (req, res) => {
   const { code } = req.query;
   if (!code) {
-      return res.status(400).send('Authorization code not provided');
+    return res.status(400).send('Authorization code not provided');
   }
   // 받은 인가 코드를 클라이언트로 반환하거나 액세스 토큰 요청으로 연결
   res.json({ authorization_code: code });
@@ -60,7 +61,7 @@ export const kakaoLogin = async (req, res) => {
       scope,
     }); // 클라이언트로 카카오 액세스 토큰, 리프래쉬 토큰 반환
   } catch (error) {
-    console.error("카카오 액세스 토큰 요청 실패: ", error.response?.data || error.message);
+    logger.error("카카오 액세스 토큰 요청 실패: " + (error.response?.data || error.message));
     res.status(500).send('Token request failed');
   }
 };
@@ -78,7 +79,7 @@ export const getKakaoUser = async (accessToken) => {
 
     return response.data; // 사용자 정보 반환
   } catch (error) {
-    console.error('카카오 사용자 정보 요청 실패:', error.response?.data || error.message);
+    logger.error('카카오 사용자 정보 요청 실패:', error.response?.data || error.message);
     throw new Error('Failed to retrieve user info');
   }
 };
@@ -113,6 +114,9 @@ export const handleKakaoUser = async (req, res) => {
           profile_img,
         },
       });
+      logger.info(`새로운 사용자 생성: ${email}`);
+    } else {
+      logger.info(`기존 사용자 로그인: ${email}`);
     }
 
     // JWT 토큰 생성
@@ -138,7 +142,7 @@ export const handleKakaoUser = async (req, res) => {
       accessToken
     });
   } catch (error) {
-    console.error('사용자 처리 실패:', error.message);
+    logger.error('사용자 처리 실패: ' + error.message);
     res.status(500).send('Failed to process user');
   }
 };

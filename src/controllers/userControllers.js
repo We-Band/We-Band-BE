@@ -11,6 +11,7 @@ export const getCurrentUser = async (req, res) => {
     });
 
     if (!currentUser) { // 현재 사용자가 없는 경우
+      logger.error('현재 사용자를 찾을 수 없습니다.');
       return res.status(404).json({ message: '현재 사용자를 찾을 수 없습니다.' });
     }
 
@@ -20,12 +21,13 @@ export const getCurrentUser = async (req, res) => {
     };
 
     // 사용자 정보 반환
+    logger.info(`사용자 프로필 접근 성공: ${currentUser.email}`);
     res.status(200).json({
       message: '사용자 프로필 접근 성공',
       user: serializedUser,
     });
   } catch (err) {
-    console.error('getCurrentUser 오류:', err.message);
+    logger.error('getCurrentUser 오류: ' + err.message);
     res.status(500).json({ message: '사용자 정보를 가져오는 데 실패했습니다.' });
   }
 };

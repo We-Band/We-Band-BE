@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
+import { logger } from '../utils/logger.js';
 
 const prisma = new PrismaClient();
 
@@ -40,8 +41,10 @@ export const refreshAccessToken = async (req) => {
 
     // 새로운 액세스 토큰 발급
     const newAccessToken = generateAccessToken(user);
+    logger.info(`Refresh Token 검증 성공 - 새로운 Access Token 발급: ${user.email}`);
     return newAccessToken;
   } catch (err) {
+    logger.error('Refresh Token 검증 실패: ' + err.message);
     throw new Error('유효하지 않은 Refresh Token입니다.');
   }
 };

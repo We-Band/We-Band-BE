@@ -1,5 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
+import { refreshAccessToken } from '../services/jwtServices.js';
+import { logger } from "../utils/logger.js";
 
 const prisma = new PrismaClient();
 
@@ -8,6 +10,7 @@ export const authMiddleware = async (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1];
 
   if (!token) {
+    logger.error('Access Token이 필요합니다.');
     return res.status(401).json({ message: 'Access Token이 필요합니다.' });
   }
 
@@ -21,6 +24,7 @@ export const authMiddleware = async (req, res, next) => {
     });
 
     if (!user) {
+      logger.error('사용자를 찾을 수 없습니다.');
       return res.status(401).json({ message: '사용자를 찾을 수 없습니다.' });
     }
 
@@ -50,6 +54,7 @@ export const authMiddleware = async (req, res, next) => {
         });
 
         if (!user) {
+          logger.error('사용자를 찾을 수 없습니다.');
           return res.status(401).json({ message: '사용자를 찾을 수 없습니다.' });
         }
 
@@ -65,12 +70,14 @@ export const authMiddleware = async (req, res, next) => {
 
         // 새 Access Token을 응답 헤더로 전달
         res.setHeader('x-access-token', newAccessToken);
-
+        logger.info(`새로운 Access Token 발급: ${user.email}`);
         next(); // 다음 미들웨어로 전달
       } catch (refreshErr) {
+        logger.error('새로운 Access Token 발급 실패: ' + refreshErr.message);
         return res.status(401).json({ message: '새로운 Access Token 발급 실패' });
       }
     } else {
+      logger.error('유효하지 않은 Access Token입니다.');
       return res.status(401).json({ message: '유효하지 않은 Access Token입니다.' });
     }
   }
