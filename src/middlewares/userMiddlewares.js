@@ -3,7 +3,7 @@ import { logger } from "../utils/logger.js";
 
 const prisma = new PrismaClient();
 
-/**이미 회원가입 여부 검증 */
+/**회원 가입여부 검증 */
 export const isJoined = async (req, res, next) => {
     try {
         const { email } = req.body; 
@@ -18,6 +18,7 @@ export const isJoined = async (req, res, next) => {
         });
 
         if (existingUser) {
+            logger.info("이미 가입된 회원", { email });
             return res.status(409).json({ message: "이미 가입된 이메일입니다." });
         }  
 
