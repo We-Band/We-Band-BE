@@ -18,15 +18,6 @@ export const signUpUser = async (req, res) => {
       return res.status(400).json({ message: "필수 입력값이 없습니다." });
     }
 
-    // 중복 유저 확인
-    const existingUser = await prisma.weBandUser.findUnique({
-      where: { email },
-    });
-
-    if (existingUser) {
-      return res.status(409).json({ message: "이미 가입된 이메일입니다." });
-    }
-
     const newUser = await prisma.weBandUser.create({
       data: {
         kakao_id: BigInt(kakao_id),
