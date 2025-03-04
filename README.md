@@ -51,7 +51,7 @@
   logger.error('This is an error message');  // error 로그
   logger.warn('This is a warning message');  // warn 로그
 
-- **specificLogger** - 특정 이벤트 로그 기록(클럽 추가 요청, 유저 탈퇴 기록 등)
+- **specificLogger** - 특정 이벤트 로그 기록(클럽 추가 요청, 유저 가입, 유저 탈퇴)
 
   import { specificLogger } from './utils/logger.js';
 
