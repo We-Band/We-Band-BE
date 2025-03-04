@@ -1,7 +1,6 @@
 import express from "express";
 import { prisma } from "../utils/prisma.js"; 
-import { logger } from "../utils/logger.js";
-import { authenticateUser } from "../middlewares/authMiddlewares.js";   
+import { logger } from "../utils/logger.js";  
 const router = express.Router();
 
 export const joinClub = async (req, res) => {
