@@ -18,7 +18,7 @@ app.use(authenticateUser); // 사용자 인증 미들웨어
 app.use(cookieParser());
 
 app.use("/user", userRoutes);
-app.use("/club", clubRoutes);
+app.use("/clubs", clubRoutes);
 
 app.get("/", (req, res) => {
   res.status(200).json({ message: "서버가 정상적으로 동작 중입니다!" });
