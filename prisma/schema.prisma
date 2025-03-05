@@ -17,7 +17,7 @@ datasource db {
 model Club {
   club_id     Int             @id @default(autoincrement())
   club_name   String
-  clubLeader  Int
+  club_leader  Int
   club_code   String
   member_count Int
   created_at         DateTime  @default(now())
