@@ -22,7 +22,7 @@ app.use("/clubs", clubRoutes);
 
 //postman 테스트용 코드
 import jwt from "jsonwebtoken";
-const token = jwt.sign({ userId: 1}, "secret", { expiresIn: "1h" });
+const token = jwt.sign({ userId: 1}, "secret", { expiresIn: "10h" });
 console.log(token);
 
 

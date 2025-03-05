@@ -16,7 +16,7 @@ export const isJoinedClub = async (req, res, next) => {
             },
         });
 
-        if (existingMember) {
+        if (existing) {
             logger.info("이미 가입된 동아리", { clubId }, { userId });
             return res.status(409).json({ message: "이미 가입된 동아리입니다." });
         }
@@ -51,7 +51,7 @@ export const isClubExist = async (req, res, next) => {
     }
 }; 동아리 가입여부 따질때 이미 동아리 존재여부 검증을 해야하니 주석처리 */
 
-//추방할 사용자 동아리 가입 여부 검증
+//동아리 가입 여부 검증(동아리 탈퇴, 추방시)
 export const isUserJoinedClub = async (req, res, next) => {
     try {
         const { clubId } = req.params;
@@ -60,19 +60,19 @@ export const isUserJoinedClub = async (req, res, next) => {
         const existingMember = await prisma.clubMember.findFirst({
             where: {
                 club_id: Number(clubId),
-                user_id: Number(userId),
+                user_id: { equals: 2 },
             },
         });
 
-        if (!existingUser) {
+        if (!existingMember) {
             logger.info("동아리에 가입하지 않은 사용자 입니다.");
             return res.status(409).json({ message: "동아리에 가입되지 않은 사용자입니다."})
         }
 
-        logger.info("내보낼 회원 동아리 가입 여부 검증 완료");
+        logger.info("가입 여부 검증 완료");
         next();
     } catch(error) {
-        logger.error(`내보낼 회원 동아리 가입 여부 검증 실패`);
+        logger.error(`동아리 가입 여부 검증 실패${error.message}`, { error } );
         return res.status(500).json({ message: "서버 오류 발생" });
     }
 };

@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.post("/:clubId", isJoinedClub, joinClub);
 
-router.delete("/:clubId", isJoinedClub, quitClub);
+router.delete("/:clubId", isUserJoinedClub, quitClub);
 
 router.post("/:ClubId/kick", isLeader, isUserJoinedClub, kickMember);
 
