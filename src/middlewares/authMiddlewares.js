@@ -1,23 +1,84 @@
+import jwt from 'jsonwebtoken';
+import { PrismaClient } from '@prisma/client';
+import { refreshAccessToken } from '../services/jwtServices.js';
 import { logger } from "../utils/logger.js";
-import jwt from "jsonwebtoken";
 
-export const authenticateUser = (req, res, next) => {
-    try {
-        const token = req.headers.authorization?.split(" ")[1];
+const prisma = new PrismaClient();
 
-        if (!token) {
-            logger.info("토큰 인증 실패");
-            return res.status(401).json({ message: "인증이 필요합니다." });
+// 사용자 인증 미들웨어 (JWT 토큰)
+export const authMiddleware = async (req, res, next) => {
+  const token = req.headers.authorization?.split(' ')[1];
+
+  if (!token) {
+    logger.error('Access Token이 필요합니다.');
+    return res.status(401).json({ message: 'Access Token이 필요합니다.' });
+  }
+
+  try {
+    // Access Token 검증
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    
+    // 데이터베이스에서 사용자 확인
+    const user = await prisma.weBandUser.findUnique({
+      where: { user_id: decoded.userId },
+    });
+
+    if (!user) {
+      logger.error('사용자를 찾을 수 없습니다.');
+      return res.status(401).json({ message: '사용자를 찾을 수 없습니다.' });
+    }
+
+    // 사용자 정보를 요청 객체에 추가
+    req.user = { 
+      user_id: user.user_id,
+      kakao_id: user.kakao_id.toString(), // BigInt -> 문자열 변환
+      email: user.email,
+      user_name: user.user_name,
+      profile_img: user.profile_img,
+    };
+
+    next(); // 다음 미들웨어로 전달
+  } catch (err) {
+    if (err.name === 'TokenExpiredError') {
+      // Access Token이 만료된 경우, Refresh Token을 사용하여 갱신
+      try {
+        const newAccessToken = await refreshAccessToken(req);
+        // 새 액세스 토큰을 헤더에 설정하고 사용자 정보를 유지합니다.
+        req.headers.authorization = `Bearer ${newAccessToken}`;
+        
+        // 새 액세스 토큰으로 디코딩하여 사용자 정보를 가져옵니다.
+        const decoded = jwt.verify(newAccessToken, process.env.JWT_SECRET);
+        // 데이터베이스에서 사용자 확인
+        const user = await prisma.weBandUser.findUnique({
+          where: { user_id: decoded.userId },
+        });
+
+        if (!user) {
+          logger.error('사용자를 찾을 수 없습니다.');
+          return res.status(401).json({ message: '사용자를 찾을 수 없습니다.' });
         }
 
-        // JWT 검증
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.userId = decoded.userId // req.user에 userId 저장
+        // 새 Access Token을 요청 객체에 반영
+        req.headers.authorization = `Bearer ${newAccessToken}`;
+        req.user = {
+          user_id: user.user_id,
+          kakao_id: user.kakao_id.toString(), // BigInt -> 문자열 변환
+          email: user.email,
+          user_name: user.user_name,
+          profile_img: user.profile_img,
+        };
 
-        next();
-    } catch (error) {
-        logger.error(`토큰인증 중 오류 발생: ${error.message}`, { error });
-        return res.status(403).json({ message: "토큰 인증 중 오류 발생"});
+        // 새 Access Token을 응답 헤더로 전달
+        res.setHeader('x-access-token', newAccessToken);
+        logger.info(`새로운 Access Token 발급: ${user.email}`);
+        next(); // 다음 미들웨어로 전달
+      } catch (refreshErr) {
+        logger.error('새로운 Access Token 발급 실패: ' + refreshErr.message);
+        return res.status(401).json({ message: '새로운 Access Token 발급 실패' });
+      }
+    } else {
+      logger.error('유효하지 않은 Access Token입니다.');
+      return res.status(401).json({ message: '유효하지 않은 Access Token입니다.' });
     }
-}
-
+  }
+};

@@ -2,21 +2,20 @@ import express from "express";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import { logger, morganMiddleware } from "./utils/logger.js";
-import { authenticateUser } from "./middlewares/authMiddlewares.js";
+import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import clubRoutes from "./routes/clubRoutes.js";
 
 dotenv.config();
 
 const app = express();
-
+-
+// Express 애플리케이션 설정
 app.use(express.json()); // json
 app.use(morganMiddleware); //api 로그 기록(개발 환경에서만)
-app.use(authenticateUser); // 사용자 인증 미들웨어
-
-// Express 애플리케이션 설정
 app.use(cookieParser());
 
+app.use("/auth", authRoutes);
 app.use("/user", userRoutes);
 app.use("/club", clubRoutes);
 

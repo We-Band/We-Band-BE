@@ -1,12 +1,13 @@
 import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
+import { logger } from '../utils/logger.js';
 
 const prisma = new PrismaClient();
 
 // JWT 액세스 토큰 생성
 export const generateAccessToken = (user) => {
   return jwt.sign(
-    { userId: user.userID, email: user.email, kakaoID: user.kakaoID },
+    { userId: user.user_id, email: user.email, kakaoID: user.kakao_id.toString() },
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_ACCESS_EXPIRATION }
   );
@@ -15,7 +16,7 @@ export const generateAccessToken = (user) => {
 // JWT 리프래시 토큰 생성
 export const generateRefreshToken = (user) => {
   return jwt.sign(
-    { userId: user.userID, email: user.email, kakaoID: user.kakaoID },
+    { userId: user.user_id, email: user.email, kakaoID: user.kakao_id.toString() },
     process.env.JWT_REFRESH_SECRET,
     { expiresIn: process.env.JWT_REFRESH_EXPIRATION }
   );
@@ -30,8 +31,8 @@ export const refreshAccessToken = async (req) => {
     }
     // 리프래시 토큰 검증
     const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
-    const user = await prisma.user.findUnique({
-      where: { userID: decoded.userId },
+    const user = await prisma.weBandUser.findUnique({
+      where: { user_id: decoded.userId },
     });
 
     if (!user) {
@@ -40,8 +41,10 @@ export const refreshAccessToken = async (req) => {
 
     // 새로운 액세스 토큰 발급
     const newAccessToken = generateAccessToken(user);
+    logger.info(`Refresh Token 검증 성공 - 새로운 Access Token 발급: ${user.email}`);
     return newAccessToken;
   } catch (err) {
+    logger.error('Refresh Token 검증 실패: ' + err.message);
     throw new Error('유효하지 않은 Refresh Token입니다.');
   }
 };

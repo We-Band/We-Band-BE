@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 3000;
 prisma.$connect()
   .then(() => logger.info('prisma connected'))
   .catch((error) => logger.error('prisma connection error', err));
- 
+
 const server = http.createServer(app);
 
 server.listen(PORT, async() => {
