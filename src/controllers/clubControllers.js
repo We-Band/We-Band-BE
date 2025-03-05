@@ -1,6 +1,9 @@
 import express from "express"; 
 import { logger } from "../utils/logger.js";  
+import { PrismaClient } from "@prisma/client";
 const router = express.Router();
+
+const prisma = new PrismaClient();
 
 // 동아리 가입 API (POST /clubs/:clubId/join)
 export const joinClub = async (req, res) => {
@@ -14,9 +17,19 @@ export const joinClub = async (req, res) => {
             return res.status(400).json({ message: "가입 코드를 입력해주세요." });
         }
 
+        // 동아리 정보 조회 (club 변수 정의)
+        const club = await prisma.club.findUnique({
+            where: { club_id: Number(clubId) },
+        });
+        
+        if (!club) {
+            logger.info(`동아리 정보 없음: clubId ${clubId}`);
+            return res.status(404).json({ message: "존재하지 않는 동아리입니다." });
+        }
+
         //가입코드 검증
         if (club.club_code !== clubCode) {
-            logger.info(`잘못된 동아리 코드 입력: ${clubCode} (정답: ${club.club_code})`);
+            logger.info(`잘못된 동아리 코드 입력: ${clubCode}`);
             return res.status(400).json({ message: "잘못된 동아리 코드입니다." });
         }
 
@@ -49,7 +62,7 @@ export const joinClub = async (req, res) => {
 //동아리 탈퇴 API (DELETE /clubs/:clubId)
 export const quitClub = async (req, res) => {
     try {
-        const { clubId } = req.parmas;
+        const { clubId } = req.params;
         const userId = req.userId;
 
         //clubMember 테이블에 사용자 삭제
@@ -71,7 +84,7 @@ export const quitClub = async (req, res) => {
 //동아리 추방API (DELETE /clubs/:clubId/kick)
 export const kickMember = async (req, res) => {
     try {
-        const { clubId } = req.parmas;
+        const { clubId } = req.params;
         const userId = req.userId;
 
         //clubMember 테이블에 사용자 삭제
@@ -93,7 +106,7 @@ export const kickMember = async (req, res) => {
 //동아리 가입 코드 수정 API (POST /clubs/:clubId/setting)
 export const changeCode = async (req, res) => {
     try {
-        const { clubId } = req.parmas;
+        const { clubId } = req.params;
         const { newCode } = req.body;
 
         if (!newCode) {
@@ -119,7 +132,7 @@ export const changeCode = async (req, res) => {
 //동아리 회장 변경 API (PATCH /clubs/:clubId/leader)
 export const changeLeader = async (req, res) => {
     try {
-        const { clubId } = req.parmas;
+        const { clubId } = req.params;
         const { newLeader} = req.body;
 
         if (!newLeader) {

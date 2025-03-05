@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 //동아리 가입여부 검증 
 export const isJoinedClub = async (req, res, next) => {
     try {
-        const { clubId } = req.parmas;
+        const { clubId } = req.params;
         const userId = req.userId;
 
         const existingMember = await prisma.clubMember.findFirst({
@@ -16,7 +16,7 @@ export const isJoinedClub = async (req, res, next) => {
             },
         });
 
-        if (existingUser) {
+        if (existingMember) {
             logger.info("이미 가입된 동아리", { clubId }, { userId });
             return res.status(409).json({ message: "이미 가입된 동아리입니다." });
         }
@@ -54,7 +54,7 @@ export const isClubExist = async (req, res, next) => {
 //추방할 사용자 동아리 가입 여부 검증
 export const isUserJoinedClub = async (req, res, next) => {
     try {
-        const { clubId } = req.parmas;
+        const { clubId } = req.params;
         const { userId } = req.body;
 
         const existingMember = await prisma.clubMember.findFirst({
@@ -79,7 +79,7 @@ export const isUserJoinedClub = async (req, res, next) => {
 
 export const isLeader = async (req, res, next) => {
     try {
-        const { clubId } = req.parmas;
+        const { clubId } = req.params;
         const { userId } = req.body;
 
         const isUserLeader = await prisma.club.findUnique({
