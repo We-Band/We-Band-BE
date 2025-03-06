@@ -9,14 +9,13 @@ export const isJoinedClub = async (req, res, next) => {
         const { clubId } = req.params;
         const userId = req.user.user_id;
         
+        //clubMember 테이블에서 동아리 가입여부 검증
         const existingMember = await prisma.clubMember.findFirst({
             where: {
                 club_id: Number(clubId),
                 user_id: Number(userId),
             },
         });
-        
-
 
         if (!existingMember) {
             logger.info("동아리에 가입하지 않은 사용자 입니다.");
@@ -39,14 +38,13 @@ export const isUserJoinedClub = async (req, res, next) => {
         const { clubId } = req.params;
         const { userId } = req.body;
         
+        //clubMember 테이블에서 동아리 가입여부 검증
         const existingMember = await prisma.clubMember.findFirst({
             where: {
                 club_id: Number(clubId),
                 user_id: Number(userId),
             },
         });
-        
-
 
         if (!existingMember) {
             logger.info("동아리에 가입하지 않은 사용자 입니다.");
@@ -66,6 +64,7 @@ export const isLeader = async (req, res, next) => {
         const { clubId } = req.params;  
         const userId = req.user.user_id;
 
+        //club 테이블에서 동아리 회장여부 확인
         const isUserLeader = await prisma.club.findFirst({
             where: {
                 club_id: Number(clubId),

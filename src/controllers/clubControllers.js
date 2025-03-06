@@ -16,6 +16,7 @@ export const joinClub = async (req, res) => {
             return res.status(400).json({ message: "동아리 가입 코드가 필요합니다." });
         }
 
+        //club객체 생성
         const club = await prisma.club.findUnique({
             where: { club_code: clubCode },
         });
@@ -28,6 +29,7 @@ export const joinClub = async (req, res) => {
 
         const clubId = club.club_id;
 
+        //동아리 가입 여부 확인
         const existingMember = await prisma.clubMember.findFirst({
             where: {
                 club_id: clubId,
@@ -72,6 +74,7 @@ export const quitClub = async (req, res) => {
         const { clubId } = req.params;
         const userId = req.user.user_id;
 
+        //club 객체 생성
         const club = await prisma.club.findUnique({
             where: { club_id: Number(clubId) },
         });
@@ -105,6 +108,7 @@ export const kickMember = async (req, res) => {
         const { userId } = req.body;
         const myId = req.user.user_id;
 
+        //club 객체 생성
         const club = await prisma.club.findUnique({
             where: { club_id: Number(clubId) },
         });
@@ -114,6 +118,7 @@ export const kickMember = async (req, res) => {
             return res.status(404).json({ message: "존재하지 않는 동아리입니다." });
         }
 
+        //추방할 user랑 회장 아이디랑 같으면 추방 불가능
         if ( userId == myId) {
             logger.info('회장은 퇴출할 수 없습니다');
             return res.status(405).json({ message: "회장은 퇴출 불가능합니다."});
@@ -144,15 +149,11 @@ export const changeCode = async (req, res) => {
         const { newCode } = req.body;
 
         if (!newCode) {
-            logger.info("변경할 동아리 코드 누락");
-            return res.status(400).json({ messsage: "가입 코드를 입력해주세요. "});
-        }
-
-        if (!newCode) {
             console.error("동아리 가입 코드가 제공되지 않았습니다.");
             return res.status(400).json({ message: "동아리 가입 코드가 필요합니다." });
         }
 
+        //club객체 생성
         const club = await prisma.club.findUnique({
             where: { club_id: Number(clubId) },
         });
@@ -163,6 +164,7 @@ export const changeCode = async (req, res) => {
             return res.status(404).json({ message: "존재하지 않는 동아리입니다." });
         }
         
+        //가입 코드 변경
         await prisma.club.update({
             where: { club_id: Number(clubId) },
             data: {
@@ -189,16 +191,17 @@ export const changeLeader = async (req, res) => {
             return res.status(400).json({ messsage: "회장으로 임명할 사용자를 선택해주세요."});
         }
         
+        //club 객체 생성
         const club = await prisma.club.findUnique({
             where: { club_id: Number(clubId) },
         });
-    
     
         if (!club) {
             logger.info(`동아리 정보 없음: clubId ${clubId}`);
             return res.status(404).json({ message: "존재하지 않는 동아리입니다." });
         }
         
+        //동아리 회장 변경
         await prisma.club.update({
             where: { club_id: Number(clubId) },
             data: {
