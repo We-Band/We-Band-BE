@@ -18,7 +18,7 @@ model Club {
   club_id     Int             @id @default(autoincrement())
   club_name   String
   club_leader  Int
-  club_code   String
+  club_code   String  @unique
   member_count Int
   created_at         DateTime  @default(now())
   schedules   ClubSchedule[]

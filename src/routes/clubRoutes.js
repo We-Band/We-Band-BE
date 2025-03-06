@@ -1,16 +1,19 @@
 import express from "express";
-import { isJoinedClub, isUserJoinedClub, isLeader  } from "../middlewares/clubMiddlewares.js"; 
+import { authMiddleware } from "../middlewares/authMiddlewares.js";
+import { isUserJoinedClub, isLeader  } from "../middlewares/clubMiddlewares.js"; 
 import { joinClub, quitClub, kickMember, changeCode, changeLeader } from "../controllers/clubControllers.js"; 
 
 const router = express.Router();
 
-router.post("/:clubId", isJoinedClub, joinClub);
+router.use(authMiddleware); // 인증 미들웨어 적용 (jwt 토큰)
+
+router.post("/", joinClub);
 
 router.delete("/:clubId", isUserJoinedClub, quitClub);
 
-router.post("/:ClubId/kick", isLeader, isUserJoinedClub, kickMember);
+router.delete("/:clubId/kick", isLeader, isUserJoinedClub, kickMember);
 
-router.post("/:clubId/setting", isLeader, changeCode);
+router.patch("/:clubId/setting", isLeader, changeCode);
 
 router.patch("/:clubId/leader", isLeader, changeLeader);
 
