@@ -3,37 +3,35 @@ import { logger } from "../utils/logger.js";
 
 const prisma = new PrismaClient();
 
-/*동아리 가입여부 검증 
+//동아리 가입여부 검증 
 export const isJoinedClub = async (req, res, next) => {
     try {
-        const { clubCode } = req.body;
-        const userId = req.user.userId;
-        const club = await prisma.club.findUnique({
-            where: { clubCode: clubCode },
-        });
-        const clubId = club.club_id;
-
+        const { clubId } = req.params;
+        const userId = req.user.user_id;
+        
         const existingMember = await prisma.clubMember.findFirst({
             where: {
                 club_id: Number(clubId),
-                user_id: userId,
+                user_id: Number(userId),
             },
         });
+        
 
-        if (existingMember) {
-            logger.info("이미 가입된 동아리", { clubId }, { userId });
-            return res.status(409).json({ message: "이미 가입된 동아리입니다." });
+
+        if (!existingMember) {
+            logger.info("동아리에 가입하지 않은 사용자 입니다.");
+            return res.status(409).json({ message: "동아리에 가입되지 않은 사용자입니다."})
         }
 
-        logger.info("동아리 가입 여부 검증 완료", { clubId }, { userId });
+        logger.info("가입 여부 검증 완료");
         next();
-    } catch (error) {
-        logger.error(`동아리 가입 여부 검증 실패: ${error.message}`, { error });
+    } catch(error) {
+        logger.error(`동아리 가입 여부 검증 실패${error.message}`, { error } );
         return res.status(500).json({ message: "서버 오류 발생" });
     }
 };
 
-*/
+
 
 //동아리 가입 여부 검증(동아리 탈퇴, 추방시)
 export const isUserJoinedClub = async (req, res, next) => {

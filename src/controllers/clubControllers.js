@@ -103,13 +103,20 @@ export const kickMember = async (req, res) => {
     try {
         const { clubId } = req.params;
         const { userId } = req.body;
+        const myId = req.user.user_id;
 
         const club = await prisma.club.findUnique({
             where: { club_id: Number(clubId) },
         });
-      
+        
         if (!club) {
+            logger.info(`존재하지 않는 동아리 입니다 ${clubId}`)
             return res.status(404).json({ message: "존재하지 않는 동아리입니다." });
+        }
+
+        if ( userId == myId) {
+            logger.info('회장은 퇴출할 수 없습니다');
+            return res.status(405).json({ message: "회장은 퇴출 불가능합니다."});
         }
 
         //clubMember 테이블에 사용자 삭제
