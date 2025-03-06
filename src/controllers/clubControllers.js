@@ -8,23 +8,22 @@ const prisma = new PrismaClient();
 // 동아리 가입 API (POST /clubs)
 export const joinClub = async (req, res) => {
     try {
-        const { clubCode } = req.body; 
+        const { clubCode } = req.body;
         const userId = req.user.user_id;
 
         if (!clubCode) {
             console.error("동아리 가입 코드가 제공되지 않았습니다.");
             return res.status(400).json({ message: "동아리 가입 코드가 필요합니다." });
-          }
-          
-         
+        }
+
         const club = await prisma.club.findUnique({
-                where: { club_code: clubCode },
-            });
-        
-        
+            where: { club_code: clubCode },
+        });
+
+        // club이 null인 경우 처리
         if (!club) {
-            logger.info(`동아리 정보 없음: clubId ${clubId}`);
-            return res.status(404).json({ message: "존재하지 않는 동아리입니다." });
+            logger.info(`잘못된 동아리 코드 입력: clubCode ${clubCode}`);
+            return res.status(404).json({ message: "잘못된 동아리 코드입력" });
         }
 
         const clubId = club.club_id;
@@ -41,27 +40,15 @@ export const joinClub = async (req, res) => {
             return res.status(409).json({ message: "이미 가입된 동아리입니다." });
         }
 
-        if (!clubCode) {
-            logger.info("가입 코드 누락");
-            return res.status(400).json({ message: "가입 코드를 입력해주세요." });
-        }
-    
-
-        //가입코드 검증
-        if (club.club_code !== clubCode) {
-            logger.info(`잘못된 동아리 코드 입력: ${clubCode}`);
-            return res.status(400).json({ message: "잘못된 동아리 코드입니다." });
-        }
-
-        //clubMember 테이블에 사용자 추가
+        // clubMember 테이블에 사용자 추가
         await prisma.clubMember.create({
             data: {
                 club_id: Number(clubId),
                 user_id: Number(userId),
             },
         });
-        
-        //가입인원 수 증가
+
+        // 가입인원 수 증가
         await prisma.club.update({
             where: { club_id: Number(clubId) },
             data: {
