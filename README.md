@@ -63,11 +63,6 @@
   info: GET /user 304 - - 1.382 ms   이런 형식으로 로그 기록
 
 ---
-## 📌 jwtToken에서 userId 가지고 오기
-  -const userId = req.userId; 사용
-  -app.js에서 설정해놔서 따로 router에 미들웨어 추가할 필요없음
-
----
 
 ## 👨‍👩‍👧‍👦 팀원
 
