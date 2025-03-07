@@ -78,7 +78,7 @@ export const quitClub = async (req, res) => {
         const club = await prisma.club.findUnique({
             where: { club_id: Number(clubId) },
         });
-      
+        
         if (!club) {
             return res.status(404).json({ message: "존재하지 않는 동아리입니다." });
         }
