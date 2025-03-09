@@ -16,5 +16,6 @@ router.get("/test", async (req, res) => {
 });
 
 router.post("/signup", isJoined, signUpUser);
+router.post("/login", Id, Passward);
 
 export default router;
