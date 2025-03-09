@@ -12,7 +12,7 @@ export const joinClub = async (req, res) => {
         const userId = req.user.user_id;
 
         if (!clubCode) {
-            console.error("동아리 가입 코드가 제공되지 않았습니다.");
+            logger.error("동아리 가입 코드가 제공되지 않았습니다.");
             return res.status(400).json({ message: "동아리 가입 코드가 필요합니다." });
         }
 
