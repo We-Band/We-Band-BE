@@ -1,8 +1,7 @@
 import express from "express";
 import { authMiddleware } from "../middlewares/authMiddlewares.js";
 import { isLeader } from "../middlewares/clubMiddlewares.js";
-import { viewMonthSchedule, viewWeekSchedule, viewDetailchedule, addSchedule, deleteSchedule, modifySchedule } from "../controllers/clubScheduleControllers.js";
-import { isClubScheduleExist } from "../middlewares/clubScheduleMiddlewares.js";
+import { viewSchedule ,viewDetailchedule, addSchedule, deleteSchedule, modifySchedule } from "../controllers/clubScheduleControllers.js";
 
 const router = express.Router();
 
@@ -10,16 +9,14 @@ const router = express.Router();
 
 router.use(authMiddleware); // 인증 미들웨어 적용 (jwt 토큰)
 
-router.get("/month", viewMonthSchedule);
+router.get("/", viewSchedule);
 
-router.get("/week", viewWeekSchedule);
-
-router.get("/:scheduleId", viewDetailchedule)
+router.get("/:clubScheduleId", viewDetailchedule)
 
 router.post("/", isLeader, addSchedule);
 
-router.delete("/:scheduleId", isLeader, deleteSchedule);
+router.delete("/:clubScheduleId", isLeader, deleteSchedule);
 
-router.put("/:scheduleId", isLeader, modifySchedule);
+router.put("/:clubScheduleId", isLeader, modifySchedule);
 
 export default router;

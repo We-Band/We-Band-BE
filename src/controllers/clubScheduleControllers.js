@@ -5,113 +5,124 @@ const router = express.Router();
 
 const prisma = new PrismaClient();
 
-export const viewMonthSchedule = async (req, res) => {
+/* 월간 or 주간 동아리 일정 조회 API (GET /clubs/:clubId/clubSchedule?month=2025-03) 
+or (GET /clubs/:clubId/clubSchedule?week=2025-03-10) */
+export const viewSchedule = async (req, res) => {
     try {
         const { clubId } = req.params;
-        const { date } = req.query
-        if (!date) {
-            logger.error("조회할 달이 없습니다. ")
-            return res.status(400)({ message: "조회할 달이 없습니다." });
+        const { month, week } = req.query;
+
+        //월간 일정 조회 
+        if (month) {
+
+            //날짜를 월 단위로 요청
+            const startDate = new Date(`${month}-01`);
+            const endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0);
+
+            //clubSchedules에 보낼 정보 선택
+            const clubSchedules = await prisma.clubSchedule.findMany({
+                where: {
+                    club_id: Number(clubId),
+                    club_schedule_time: {
+                        gte: startDate,
+                        lte: endDate
+                    }
+                },
+                select: {
+                    club_schedule_id: true,
+                    club_schedule_time: true
+                },
+                orderBy: {
+                    club_schedule_time: 'asc'
+                }
+            });
+
+            logger.info('동아리 월간 일정을 보냈습니다.', { clubScheduleIds: clubSchedules.map(s => s.club_schedule_id) });
+            return res.json(clubSchedules);
         }
 
-        const startDate = new Date(date + "-01");
-        const endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0);
+        //주간 일정 조회
+        if (week) {
 
-        const schedules = await prisma.clubSchedule.findMany({
-            where: {
-                club_id: clubId,
-                club_schedule_time: {
-                    gte: startDate,
-                    lte: endDate
+            //날짜를 주 단위로 요청
+            const inputDate = new Date(week);
+            const dayOfWeek = inputDate.getDay();
+            const startDate = new Date(inputDate);
+            startDate.setDate(inputDate.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1)); // 월요일 찾기
+            startDate.setHours(0, 0, 0, 0);
+
+            const endDate = new Date(startDate);
+            endDate.setDate(startDate.getDate() + 6);
+            endDate.setHours(23, 59, 59, 999);
+
+            //clubSchedules에 보낼 정보 선택
+            const clubSchedules = await prisma.clubSchedule.findMany({
+                where: {
+                    club_id: Number(clubId),
+                    club_schedule_time: {
+                        gte: startDate,
+                        lte: endDate
+                    }
+                },
+                select: {
+                    club_schedule_id: true,
+                    club_schedule_time: true,
+                    club_schedule_title: true
+                },
+                orderBy: {
+                    club_schedule_time: 'asc'
                 }
-            },
-            select: {
-               club_schedule_id: true, 
-               club_schedule_time: true
-            },
-            orderBy: {
-                club_schedule_time: 'asc'
-            }
-        });
-        
-        return res.json(schedules);
+            });
+
+            logger.info('동아리 주간 일정을 보냈습니다.', { clubScheduleIds: clubSchedules.map(s => s.club_schedule_id) });
+            return res.json(clubSchedules);
+        }
+
+        // month, week 둘 다 없는 경우
+        logger.error('요청한 query string이 없습니다.')
+        return res.status(400).json({ message: "조회할 기간을 지정하세요 (month 또는 week)" });
 
     } catch (error) {
-        logger.error('서버 실행 중 오류 발생');
-        return res.status(400).json({ message: "서버 실행 중 오류 발생"})
+        logger.error('서버 실행 중 오류 발생', error);
+        return res.status(500).json({ message: "서버 실행 중 오류 발생" });
     }
-};//날짜 선택하면 club_schedule_id가 있는 곳으로 url 보내도록 , week에서도 마찬가지
+}; //조회하고 싶은 일정 선택시 /clubs/:clubId/:clubScheduleId로 url 보내기
 
-export const viewWeekSchedule = async (req, res) => {
+
+//동아리 일정 정보 조회 API (GET /clubs/:clubId/:clubScheduleId) 
+export const viewDetailchedule = async (req, res) => {
     try {
-        const { clubId } = req.params;
-        const { date } = req.query
-        if (!date) {
-            logger.error("조회할 주가 없습니다. ")
-            return res.status(400)({ message: "조회할 주가 없습니다." });
+        const { clubScheduleId } = req.query
+
+        //동아리 일정 정보 존재 여부 검증
+        if (!clubScheduleId) {
+            logger.error("조회할 동아리 일정이 없습니다. ")
+            return res.status(400)({ message: "조회할 동아리 일정이 없습니다." });
         }
 
-        const inputDate = new Date(date);
-        const dayOfWeek = inputDate.getDay(); // 0(일) ~ 6(토)
-        const startDate = new Date(inputDate);
-        startDate.setDate(inputDate.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1)); // 월요일 찾기
-        startDate.setHours(0, 0, 0, 0);
-    
-        const endDate = new Date(startDate);
-        endDate.setDate(startDate.getDate() + 6); // 일요일 찾기
-        endDate.setHours(23, 59, 59, 999);
-
-        const schedules = await prisma.clubSchedule.findMany({
+        //사용자 화면에 띄울 동아리 일정 정보 보냄
+        const clubSchedules = await prisma.clubSchedule.findMany({
             where: {
-                club_id: clubId,
-                club_schedule_time: {
-                    gte: startDate,
-                    lte: endDate
-                }
+                club_schedule_id: scheduleId
             },
             select: {
-               club_schedule_id: true, 
-               club_schedule_time: true,
-               club_schedule_title: true
+                club_schedule_time: true,
+                club_schedule_title: true,
+                club_schedule_place: true
             },
             orderBy: {
                 club_schedule_time: 'asc'
             }
         });
         
-        return res.json(schedules);
+        logger.info('동아리 일정 정보를 보냈습니다.', { clubScheduleId });
+        return res.json(clubSchedules);
 
     } catch (error) {
         logger.error('서버 실행 중 오류 발생');
         return res.status(400).json({ message: "서버 실행 중 오류 발생"})
     }
 };
-
-export const viewDetailchedule = async (req, res) => {
-    try {
-        const { clubId } = req.params;
-        const { scheduleId } = req.query
-        if (!scheduleId) {
-            logger.error("조회할 동아리 일정이 없습니다. ")
-            return res.status(400)({ message: "조회할 동아리 일정이 없습니다." });
-        }
-
-        const schedules = await prisma.clubSchedule.findMany({
-            where: {
-                club_schedule_id: scheduleId
-            },
-            orderBy: {
-                club_schedule_time: 'asc'
-            }
-        });
-        
-        return res.json(schedules);
-
-    } catch (error) {
-        logger.error('서버 실행 중 오류 발생');
-        return res.status(400).json({ message: "서버 실행 중 오류 발생"})
-    }
-}
 
 export const addSchedule = async (req, res) => {
     try {
