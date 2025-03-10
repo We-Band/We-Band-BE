@@ -17,6 +17,6 @@ router.post("/", isLeader, addSchedule);
 
 router.delete("/:clubScheduleId", isLeader, deleteSchedule);
 
-router.put("/:clubScheduleId", isLeader, modifySchedule);
+router.patch("/:clubScheduleId", isLeader, modifySchedule);
 
 export default router;

@@ -89,7 +89,7 @@ export const viewSchedule = async (req, res) => {
 }; //조회하고 싶은 일정 선택시 /clubs/:clubId/:clubScheduleId로 url 보내기
 
 
-//동아리 일정 정보 조회 API (GET /clubs/:clubId/:clubScheduleId) 
+//동아리 일정 정보 조회 API (GET /clubs/:clubId/clubSchedule/:clubScheduleId) 
 export const viewDetailchedule = async (req, res) => {
     try {
         const { clubScheduleId } = req.query
@@ -124,25 +124,32 @@ export const viewDetailchedule = async (req, res) => {
     }
 };
 
+//동아리 일정 추가 (POST /clubs/:clubId/clubSchdule)
 export const addSchedule = async (req, res) => {
     try {
         const { clubId } = req.params;
         const { clubScheduleTime, clubScheduleTitle, clubSchedulePlace } = req.body;
 
+        //일정 시간, 제목은 필수로 들어가야함
         if (!clubScheduleTime) {
             return res.status(400).json({ message: "동아리 일정 시간을 입력하세요." });
         }
 
+        if (!clubScheduleTime) {
+            return res.status(400).json({ message: "동아리 일정 제목을 입력하세요." });
+        }
+
+        //동아리 일정 데이터베이스에 추가
         const newSchedule = await prisma.clubSchedule.create({
             data: {
                 club_id: Number(clubId),
                 club_schedule_time: new Date(clubScheduleTime),
-                club_schedule_title: clubScheduleTitle || null,
+                club_schedule_title: clubScheduleTitle,
                 club_schedule_place: clubSchedulePlace || null
             }
         });
-        logger.info('동아리 일정이 추가 됐습니다.')
 
+        logger.info('동아리 일정이 추가 됐습니다.')
         return res.status(201).json(newSchedule);
     } catch (error) {
         logger.error('동아리 일정 추가 중 오류 발생:', error);
@@ -150,10 +157,13 @@ export const addSchedule = async (req, res) => {
     }
 };
 
+//동아리 일정 삭제 API (DELETE /clubs/:clubId/clubSchdule/:clubScheduleId)
 export const deleteSchedule = async (req, res) => {
     try {
         const { clubScheduleId } = req.params;
 
+        //동아리 일정 존재 확인
+        //이부분 middleware에 모듈화 시킬려고 했으나 controller에 포함하는게 나을것 같다 생각해서 분리 안했습니다.
         const existingSchedule = await prisma.clubSchedule.findUnique({
             where: { club_schedule_id: Number(clubScheduleId) }
         });
@@ -163,7 +173,7 @@ export const deleteSchedule = async (req, res) => {
             return res.status(404).json({ message: "해당 동아리 일정을 찾을 수 없습니다." });
         }
 
-        // 스케줄 삭제
+        //동아리 일정 삭제
         await prisma.clubSchedule.delete({
             where: { club_schedule_id: Number(clubScheduleId) }
         });
@@ -176,12 +186,13 @@ export const deleteSchedule = async (req, res) => {
     }
 };
 
+//동아리 일정 수정 API (PATCH /clubs/:clubId/clubSchedule/:clubScheduld)
 export const modifySchedule = async (req, res) => {
     try {
         const { clubScheduleId } = req.params;
         const { clubScheduleTime, clubScheduleTitle, clubSchedulePlace } = req.body;
 
-        //이부분 middleware로 모듈화 시킬려고 했으나 controller에 포함하는게 효율이 좋아서 유지
+        //동아리 일정 존재 확인
         const existingSchedule = await prisma.clubSchedule.findUnique({
             where: { club_schedule_id: Number(clubScheduleId) }
         });
@@ -191,7 +202,7 @@ export const modifySchedule = async (req, res) => {
             return res.status(404).json({ message: "해당 동아리 일정을 찾을 수 없습니다." });
         }
 
-        // 스케줄 수정 (부분 업데이트)
+        //동아리 일정 수정 (부분 수정)
         const updatedSchedule = await prisma.clubSchedule.update({
             where: { club_schedule_id: Number(scheduleId) },
             data: {
