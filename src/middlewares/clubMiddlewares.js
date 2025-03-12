@@ -59,6 +59,7 @@ export const isUserJoinedClub = async (req, res, next) => {
     }
 };
 
+//회장 확인
 export const isLeader = async (req, res, next) => {
     try {
         const { clubId } = req.params;  
