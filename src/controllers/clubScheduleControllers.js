@@ -92,7 +92,7 @@ export const viewSchedule = async (req, res) => {
 //동아리 일정 정보 조회 API (GET /clubs/:clubId/clubSchedule/:clubScheduleId) 
 export const viewDetailchedule = async (req, res) => {
     try {
-        const { clubScheduleId } = req.query
+        const { clubId, clubScheduleId } = req.params
 
         //동아리 일정 정보 존재 여부 검증
         if (!clubScheduleId) {
@@ -101,17 +101,15 @@ export const viewDetailchedule = async (req, res) => {
         }
 
         //사용자 화면에 띄울 동아리 일정 정보 보냄
-        const clubSchedules = await prisma.clubSchedule.findMany({
+        const clubSchedules = await prisma.clubSchedule.findUnique({
             where: {
-                club_schedule_id: scheduleId
+                club_id: Number(clubId),
+                club_schedule_id: Number(clubScheduleId)
             },
             select: {
                 club_schedule_time: true,
                 club_schedule_title: true,
                 club_schedule_place: true
-            },
-            orderBy: {
-                club_schedule_time: 'asc'
             }
         });
         
@@ -119,7 +117,7 @@ export const viewDetailchedule = async (req, res) => {
         return res.json(clubSchedules);
 
     } catch (error) {
-        logger.error('서버 실행 중 오류 발생');
+        logger.error('서버 실행 중 오류 발생', error);
         return res.status(400).json({ message: "서버 실행 중 오류 발생"})
     }
 };
@@ -189,7 +187,7 @@ export const deleteSchedule = async (req, res) => {
 //동아리 일정 수정 API (PATCH /clubs/:clubId/clubSchedule/:clubScheduld)
 export const modifySchedule = async (req, res) => {
     try {
-        const { clubScheduleId } = req.params;
+        const { clubId, clubScheduleId } = req.params;
         const { clubScheduleTime, clubScheduleTitle, clubSchedulePlace } = req.body;
 
         //동아리 일정 존재 확인
@@ -204,7 +202,7 @@ export const modifySchedule = async (req, res) => {
 
         //동아리 일정 수정 (부분 수정)
         const updatedSchedule = await prisma.clubSchedule.update({
-            where: { club_schedule_id: Number(scheduleId) },
+            where: { club_schedule_id: Number(clubScheduleId) },
             data: {
                 club_schedule_time: clubScheduleTime ? new Date(clubScheduleTime) : existingSchedule.club_schedule_time,
                 club_schedule_title: clubScheduleTitle ?? existingSchedule.club_schedule_title,

@@ -31,7 +31,7 @@ app.use(cookieParser());
 app.use("/auth", authRoutes);
 app.use("/user", userRoutes);
 app.use("/clubs", clubRoutes);
-app.use("clubs/:clubId/clubSchedule", clubScheduleRoutes);
+app.use("/clubs/:clubId/clubSchedule", clubScheduleRoutes);
 
 app.get("/", (req, res) => {
   res.status(200).json({ message: "서버가 정상적으로 동작 중입니다!" });
