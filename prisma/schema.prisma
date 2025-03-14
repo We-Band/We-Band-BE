@@ -14,7 +14,7 @@ datasource db {
 }
 
 
-model Club {
+model club {
   club_id     Int             @id @default(autoincrement())
   club_name   String
   club_leader  Int
@@ -26,7 +26,7 @@ model Club {
   teams       Team[]
 }
 
-model ClubSchedule {
+model clubSchedule {
   club_schedule_id   Int       @id @default(autoincrement())
   club_id            Int
   club_schedule_time DateTime
@@ -36,7 +36,7 @@ model ClubSchedule {
   club               Club      @relation(fields: [club_id], references: [club_id])
 }
 
-model ClubMember {
+model clubMember {
   club_id Int
   user_id Int
   club    Club    @relation(fields: [club_id], references: [club_id])
@@ -45,19 +45,19 @@ model ClubMember {
   @@id([club_id, user_id])
 }
 
-model MySchedule {
-  schedule_id        Int       @id @default(autoincrement())
-  schedule_title     String
-  schedule_time      DateTime
-  isPublic           Boolean   @default(false)
-  schedule_place     String?
-  schedule_participated String?
+model userSchedule {
+  user_schedule_id        Int       @id @default(autoincrement())
+  user_schedule_title     String
+  user_schedule_time      DateTime
+  is_public           Boolean   @default(false)
+  user_schedule_place     String?
+  user_schedule_participated String?
   user_id            Int
   created_at         DateTime  @default(now())
   user               WeBandUser @relation(fields: [user_id], references: [user_id])
 }
 
-model Team {
+model team {
   team_id     Int            @id @default(autoincrement())
   created_by  Int
   team_name   String
@@ -69,7 +69,7 @@ model Team {
   schedules   TeamSchedule[]
 }
 
-model TeamMember {
+model teamMember {
   team_id Int
   user_id Int
   team    Team    @relation(fields: [team_id], references: [team_id])
@@ -78,7 +78,7 @@ model TeamMember {
   @@id([team_id, user_id])
 }
 
-model TeamSchedule {
+model teamSchedule {
   team_schedule_id   Int       @id @default(autoincrement())
   team_schedule_title String
   team_schedule_time DateTime
@@ -91,7 +91,7 @@ model TeamSchedule {
   creator            WeBandUser @relation(fields: [created_by], references: [user_id])
 }
 
-model WeBandUser {
+model weBandUser {
   user_id      Int           @id @default(autoincrement())
   kakao_id     BigInt        @unique
   profile_img  String?

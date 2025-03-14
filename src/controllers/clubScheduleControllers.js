@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 
 /* 월간 or 주간 동아리 일정 조회 API (GET /clubs/:clubId/clubSchedule?month=2025-03) 
 or (GET /clubs/:clubId/clubSchedule?week=2025-03-10) */
-export const viewSchedule = async (req, res) => {
+export const viewClubSchedule = async (req, res) => {
     try {
         const { clubId } = req.params;
         const { month, week } = req.query;
@@ -90,7 +90,7 @@ export const viewSchedule = async (req, res) => {
 
 
 //동아리 일정 정보 조회 API (GET /clubs/:clubId/clubSchedule/:clubScheduleId) 
-export const viewDetailchedule = async (req, res) => {
+export const viewDetailClubSchedule = async (req, res) => {
     try {
         const { clubId, clubScheduleId } = req.params
 
@@ -123,7 +123,7 @@ export const viewDetailchedule = async (req, res) => {
 };
 
 //동아리 일정 추가 (POST /clubs/:clubId/clubSchdule)
-export const addSchedule = async (req, res) => {
+export const addClubSchedule = async (req, res) => {
     try {
         const { clubId } = req.params;
         const { clubScheduleTime, clubScheduleTitle, clubSchedulePlace } = req.body;
@@ -138,7 +138,7 @@ export const addSchedule = async (req, res) => {
         }
 
         //동아리 일정 데이터베이스에 추가
-        const newSchedule = await prisma.clubSchedule.create({
+        const newClubSchedule = await prisma.clubSchedule.create({
             data: {
                 club_id: Number(clubId),
                 club_schedule_time: new Date(clubScheduleTime),
@@ -148,7 +148,7 @@ export const addSchedule = async (req, res) => {
         });
 
         logger.info('동아리 일정이 추가 됐습니다.')
-        return res.status(201).json(newSchedule);
+        return res.status(201).json(newClubSchedule);
     } catch (error) {
         logger.error('동아리 일정 추가 중 오류 발생:', error);
         return res.status(500).json({ message: "동아리 일정 추가 중 오류 발생" });
@@ -156,7 +156,7 @@ export const addSchedule = async (req, res) => {
 };
 
 //동아리 일정 삭제 API (DELETE /clubs/:clubId/clubSchdule/:clubScheduleId)
-export const deleteSchedule = async (req, res) => {
+export const deleteClubSchedule = async (req, res) => {
     try {
         const { clubScheduleId } = req.params;
 
@@ -185,7 +185,7 @@ export const deleteSchedule = async (req, res) => {
 };
 
 //동아리 일정 수정 API (PATCH /clubs/:clubId/clubSchedule/:clubScheduld)
-export const modifySchedule = async (req, res) => {
+export const modifyClubSchedule = async (req, res) => {
     try {
         const { clubId, clubScheduleId } = req.params;
         const { clubScheduleTime, clubScheduleTitle, clubSchedulePlace } = req.body;
@@ -201,7 +201,7 @@ export const modifySchedule = async (req, res) => {
         }
 
         //동아리 일정 수정 (부분 수정)
-        const updatedSchedule = await prisma.clubSchedule.update({
+        const updatedClubSchedule = await prisma.clubSchedule.update({
             where: { club_schedule_id: Number(clubScheduleId) },
             data: {
                 club_schedule_time: clubScheduleTime ? new Date(clubScheduleTime) : existingSchedule.club_schedule_time,
@@ -212,7 +212,7 @@ export const modifySchedule = async (req, res) => {
 
         logger.info('동아리 일정이 수정되었습니다.');
 
-        return res.status(200).json(updatedSchedule);
+        return res.status(200).json(updatedClubSchedule);
     } catch (error) {
         logger.error('동아리 일정 수정 중 오류 발생:', error);
         return res.status(500).json({ message: "동아리 일정 수정 중 오류 발생" });
