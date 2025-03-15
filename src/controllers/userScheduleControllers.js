@@ -11,6 +11,7 @@ export const viewUserSchedule = async (req, res) => {
     try {
         const { userId } = req.params;
         const { month, week } = req.query;
+        const myId = req.user.user_id;
 
         //월간 일정 조회 
         if (month) {
@@ -76,6 +77,10 @@ export const viewUserSchedule = async (req, res) => {
                 }
             });
 
+            if (Number(userId) !== Number(myId) && userSchedules.is_public) {
+                userSchedules.user_schedule_title = "비공개 일정";
+            }
+
             logger.info('사용자 월간 일정을 보냈습니다.', { userScheduleIds: userSchedules.map(s => s.user_schedule_id) });
             return res.json(userSchedules);
         }
@@ -95,6 +100,7 @@ export const viewUserSchedule = async (req, res) => {
 export const viewDetailUserSchedule = async (req, res) => {
     try {
         const { userId, userScheduleId } = req.params
+        const myId = req.userId
 
         //동아리 일정 정보 존재 여부 검증
         if (!userScheduleId) {
@@ -116,6 +122,16 @@ export const viewDetailUserSchedule = async (req, res) => {
             }
         });
         
+        if (!userSchedules) {
+            logger.error("사용자 일정을 찾을 수 없습니다.");
+            return res.status(400).json({ message: "사용자 일정을 찾을 수 없습니다." });
+        }
+
+        if (Number(userId) !== Number(myId) && userSchedules.is_public) {
+            userSchedules.user_schedule_title = "비공개 일정";
+            userSchedules.user_schedule_place = "비공개 장소";
+        }
+
         logger.info('동아리 일정 정보를 보냈습니다.', { userScheduleId });
         return res.json(userSchedules);
 
