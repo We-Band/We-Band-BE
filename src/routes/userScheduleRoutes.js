@@ -5,7 +5,7 @@ import { viewUserSchedule , viewDetailUserSchedule, addUserSchedule, deleteUserS
 
 const router = express.Router({ mergeParams: true }); 
 
-//동아리 일정 관련 라우터
+//사용자 일정 관련 라우터
 
 router.use(authMiddleware); // 인증 미들웨어 적용 (jwt 토큰)
 

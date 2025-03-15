@@ -50,7 +50,7 @@ export const viewUserSchedule = async (req, res) => {
             const inputDate = new Date(week);
             const dayOfWeek = inputDate.getDay();
             const startDate = new Date(inputDate);
-            startDate.setDate(inputDate.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1)); // 월요일 찾기
+            startDate.setDate(inputDate.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1)); // 월요일을 한주의 시작으로 설정
             startDate.setHours(0, 0, 0, 0);
 
             const endDate = new Date(startDate);
@@ -77,6 +77,7 @@ export const viewUserSchedule = async (req, res) => {
                 }
             });
 
+            //사용자 페이지와 접속한 사용자 id가 같아야지만 비공개 일정을 확인 가능
             if (Number(userId) !== Number(myId) && userSchedules.is_public) {
                 userSchedules.user_schedule_title = "비공개 일정";
             }
@@ -122,11 +123,13 @@ export const viewDetailUserSchedule = async (req, res) => {
             }
         });
         
+        //일정이 없는 경우(잘못된 url 접근시)
         if (!userSchedules) {
             logger.error("사용자 일정을 찾을 수 없습니다.");
             return res.status(400).json({ message: "사용자 일정을 찾을 수 없습니다." });
         }
 
+        //비공개 일정시 자세한 내용 숨기기(시간대만 알 수 있음)
         if (Number(userId) !== Number(myId) && userSchedules.is_public) {
             userSchedules.user_schedule_title = "비공개 일정";
             userSchedules.user_schedule_place = "비공개 장소";
@@ -164,6 +167,7 @@ export const addUserSchedule = async (req, res) => {
             }
         });
 
+        //존재하는 일정인지 확인
         if (existingSchedule) {
             logger.info('이미 일정이 존재하는 시간대')
             return res.status(400).json({ message: "이 시간대에는 이미 일정이 존재합니다." });
@@ -194,7 +198,6 @@ export const deleteUserSchedule = async (req, res) => {
         const { userScheduleId } = req.params;
 
         //사용자 일정 존재 확인
-        //이부분 middleware에 모듈화 시킬려고 했으나 controller에 포함하는게 나을것 같다 생각해서 분리 안했습니다.
         const existingSchedule = await prisma.userSchedule.findUnique({
             where: { user_schedule_id: Number(userScheduleId) }
         });

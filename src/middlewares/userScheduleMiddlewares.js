@@ -9,6 +9,7 @@ export const isMine = async (req, res, next) => {
         const { userId } = req.params
         const myId = req.user.user_id;
 
+        //접속한 일정이 내 일정하고 같은지 확인
         if (Number(userId) !== myId) {
             logger.info(`기능에 접근할 수 없습니다, approached user: ${ myId }`);
             return res.status(401).json({ message: '해당 기능에 접근할 권한이 없습니다.' });
