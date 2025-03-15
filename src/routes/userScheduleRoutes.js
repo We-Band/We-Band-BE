@@ -1,5 +1,6 @@
 import express from "express";
 import { authMiddleware } from "../middlewares/authMiddlewares.js";
+import { isMine } from "../middlewares/userScheduleMiddlewares.js";
 import { viewUserSchedule , viewDetailUserSchedule, addUserSchedule, deleteUserSchedule, modifyUserSchedule } from "../controllers/userScheduleControllers.js";
 
 const router = express.Router({ mergeParams: true }); 
@@ -12,10 +13,10 @@ router.get("/", viewUserSchedule);
 
 router.get("/:userScheduleId", viewDetailUserSchedule);
 
-router.post("/", addUserSchedule);
+router.post("/", isMine, addUserSchedule);
 
-router.delete("/:userScheduleId", deleteUserSchedule);
+router.delete("/:userScheduleId", isMine, deleteUserSchedule);
 
-router.patch("/:userScheduleId", modifyUserSchedule);
+router.patch("/:userScheduleId", isMine, modifyUserSchedule);
 
 export default router;
