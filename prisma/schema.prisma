@@ -45,13 +45,12 @@ model ClubMember {
   @@id([club_id, user_id])
 }
 
-model MySchedule {
-  schedule_id        Int       @id @default(autoincrement())
-  schedule_title     String
-  schedule_time      DateTime
-  isPublic           Boolean   @default(false)
-  schedule_place     String?
-  schedule_participated String?
+model UserSchedule {
+  user_schedule_id        Int       @id @default(autoincrement())
+  user_schedule_title     String
+  user_schedule_time      DateTime
+  user_schedule_place     String?
+  is_public           Boolean   @default(true)
   user_id            Int
   created_at         DateTime  @default(now())
   user               WeBandUser @relation(fields: [user_id], references: [user_id])
@@ -100,6 +99,6 @@ model WeBandUser {
   clubMembers  ClubMember[]
   teamCreators Team[]
   teamMembers  TeamMember[]
-  schedules    MySchedule[]
+  schedules    UserSchedule[]
   teamSchedules TeamSchedule[]
 }

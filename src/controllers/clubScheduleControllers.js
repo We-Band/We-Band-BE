@@ -137,6 +137,18 @@ export const addClubSchedule = async (req, res) => {
             return res.status(400).json({ message: "동아리 일정 제목을 입력하세요." });
         }
 
+        //기존 일정 중 겹치는 일정이 있는지 확인
+        const existingSchedule = await prisma.clubSchedule.findFirst({
+            where: {
+                club_id: Number(clubId),
+                club_schedule_time: new Date(clubScheduleTime)
+            }
+        });
+
+        if (existingSchedule) {
+            return res.status(400).json({ message: "이 시간대에는 이미 일정이 존재합니다." });
+        }
+
         //동아리 일정 데이터베이스에 추가
         const newClubSchedule = await prisma.clubSchedule.create({
             data: {
