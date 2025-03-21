@@ -7,10 +7,11 @@ const prisma = new PrismaClient();
 export const myTeam = async (req, res) => {
   try {
     const userId = req.user.user_id;
+    const clubId = req.params.clubId;
 
     // 팀 정보 조회
     const myTeams = await prisma.TeamMember.findMany({
-      where: { user_id: userId },
+      where: { user_id: userId, team: { club_id: Number(clubId) } },
       include: { team: true },
     });
 
