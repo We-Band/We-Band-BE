@@ -71,7 +71,7 @@ model Team {
 model TeamMember {
   team_id Int
   user_id Int
-  team    Team    @relation(fields: [team_id], references: [team_id])
+  team    Team    @relation(fields: [team_id], references: [team_id], onDelete: Cascade)
   user    WeBandUser @relation(fields: [user_id], references: [user_id])
 
   @@id([team_id, user_id])
