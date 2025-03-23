@@ -19,7 +19,7 @@ router.get("/myTeam", myTeam);
 router.get("/:teamId/viewMember", isTeamMember, viewMembers);
 router.get("/allTeam", allTeam);
 router.post("/create", createTeam);
-router.post("/:teamId/addMember", isTeamLeader, addTeamMembers);
+router.post("/:teamId/addMember", isTeamLeader, addTeamMembers); 
 router.delete("/:teamId/delete", isTeamLeader, deleteTeam);
 router.delete("/:teamId/deleteMember", isTeamLeader, deleteTeamMember);
 

@@ -69,6 +69,7 @@ export const createTeam = async (req, res) => {
     const clubId = req.params.clubId;
     const userId = req.user.user_id;
     const { teamName } = req.body;
+    const { userIds } = req.body; // 요청 본문에서 userId 리스트 가져옴
 
     if (!teamName) {
       logger.error("팀 이름이 제공되지 않았습니다.");
@@ -90,12 +91,21 @@ export const createTeam = async (req, res) => {
       },
     });
 
+    const teamMembers = userIds
+      .map((userId) => Number(userId)) // userId를 숫자로 변환
+      .map((userId) => ({
+        team_id: Number(newTeam.team_id),
+        user_id: userId,
+      }));
+
+
+    /*
     await prisma.TeamMember.create({
       data: {
         team_id: newTeam.team_id,
         user_id: userId,
       },
-    });
+    }); */
 
     logger.info("팀 생성 완료", { teamId: newTeam.team_id });
     return res.status(201).json(newTeam);

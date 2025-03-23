@@ -9,6 +9,7 @@ import clubRoutes from "./routes/clubRoutes.js";
 import clubScheduleRoutes from "./routes/clubScheduleRoutes.js";
 import userScheduleRoutes from "./routes/userScheduleRoutes.js";
 import teamRoutes from "./routes/teamRoutes.js";
+import teamScheduleRoutes from "./routes/teamScheduleRoutes.js"
 
 dotenv.config();
 
@@ -36,6 +37,7 @@ app.use("/clubs", clubRoutes);
 app.use("/clubs/:clubId/clubSchedule", clubScheduleRoutes);
 app.use("/user/:userId/userSchedule", userScheduleRoutes);
 app.use("/clubs/:clubId/team", teamRoutes);
+app.use("/clubs/:clubId/team/:teamId/teamSchedule", teamScheduleRoutes);
 
 app.get("/", (req, res) => {
   res.status(200).json({ message: "서버가 정상적으로 동작 중입니다!" });

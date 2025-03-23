@@ -29,7 +29,8 @@ model Club {
 model ClubSchedule {
   club_schedule_id   Int       @id @default(autoincrement())
   club_id            Int
-  club_schedule_time DateTime
+  club_schedule_start DateTime
+  club_schedule_end  DateTime
   club_schedule_title String?
   club_schedule_place String?
   created_at         DateTime  @default(now())
@@ -48,7 +49,8 @@ model ClubMember {
 model UserSchedule {
   user_schedule_id        Int       @id @default(autoincrement())
   user_schedule_title     String
-  user_schedule_time      DateTime
+  user_schedule_start     DateTime
+  user_schedule_end       DateTime
   user_schedule_place     String?
   is_public           Boolean   @default(true)
   user_id            Int
@@ -80,9 +82,10 @@ model TeamMember {
 model TeamSchedule {
   team_schedule_id   Int       @id @default(autoincrement())
   team_schedule_title String
-  team_schedule_time DateTime
-  schedule_place     String?
-  schedule_participated String?
+  team_schedule_start DateTime
+  team_schedule_end   DateTime
+  team_schedule_place     String?
+  team_schedule_participated String?
   team_id            Int
   created_by         Int
   created_at         DateTime  @default(now())
