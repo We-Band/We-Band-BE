@@ -23,17 +23,17 @@ export const viewClubSchedule = async (req, res) => {
             const clubSchedules = await prisma.clubSchedule.findMany({
                 where: {
                     club_id: Number(clubId),
-                    club_schedule_time: {
+                    club_schedule_start: {
                         gte: startDate,
                         lte: endDate
                     }
                 },
                 select: {
                     club_schedule_id: true,
-                    club_schedule_time: true
+                    club_schedule_start: true
                 },
                 orderBy: {
-                    club_schedule_time: 'asc'
+                    club_schedule_start: 'asc'
                 }
             });
 
@@ -59,18 +59,20 @@ export const viewClubSchedule = async (req, res) => {
             const clubSchedules = await prisma.clubSchedule.findMany({
                 where: {
                     club_id: Number(clubId),
-                    club_schedule_time: {
+                    club_schedule_start: {
                         gte: startDate,
                         lte: endDate
                     }
                 },
                 select: {
                     club_schedule_id: true,
-                    club_schedule_time: true,
+                    club_schedule_start: true,
+                    club_schedule_end: true,
                     club_schedule_title: true
                 },
                 orderBy: {
-                    club_schedule_time: 'asc'
+                    club_schedule_start: 'asc',
+                    club_schedule_end: 'asc'
                 }
             });
 
@@ -93,12 +95,6 @@ export const viewClubSchedule = async (req, res) => {
 export const viewDetailClubSchedule = async (req, res) => {
     try {
         const { clubId, clubScheduleId } = req.params
-
-        //동아리 일정 정보 존재 여부 검증
-        if (!clubScheduleId) {
-            logger.error("조회할 동아리 일정이 없습니다. ")
-            return res.status(400)({ message: "조회할 동아리 일정이 없습니다." });
-        }
 
         //사용자 화면에 띄울 동아리 일정 정보 보냄
         const clubSchedules = await prisma.clubSchedule.findUnique({
@@ -126,36 +122,25 @@ export const viewDetailClubSchedule = async (req, res) => {
 export const addClubSchedule = async (req, res) => {
     try {
         const { clubId } = req.params;
-        const { clubScheduleTime, clubScheduleTitle, clubSchedulePlace } = req.body;
+        const { clubScheduleStart, clubScheduleEnd, clubScheduleTitle, clubSchedulePlace } = req.body;
 
         //일정 시간, 제목은 필수로 들어가야함
-        if (!clubScheduleTime) {
+        if (!clubScheduleStart && clubScheduleEnd) {
             return res.status(400).json({ message: "동아리 일정 시간을 입력하세요." });
         }
 
-        if (!clubScheduleTime) {
+        if (!clubScheduleTitle) {
             return res.status(400).json({ message: "동아리 일정 제목을 입력하세요." });
-        }
-
-        //기존 일정 중 겹치는 일정이 있는지 확인
-        const existingSchedule = await prisma.clubSchedule.findFirst({
-            where: {
-                club_id: Number(clubId),
-                club_schedule_time: new Date(clubScheduleTime)
-            }
-        });
-
-        if (existingSchedule) {
-            return res.status(400).json({ message: "이 시간대에는 이미 일정이 존재합니다." });
         }
 
         //동아리 일정 데이터베이스에 추가
         const newClubSchedule = await prisma.clubSchedule.create({
             data: {
                 club_id: Number(clubId),
-                club_schedule_time: new Date(clubScheduleTime),
+                club_schedule_start: new Date(clubScheduleStart),
+                club_schedule_end: new Date(clubScheduleEnd),
                 club_schedule_title: clubScheduleTitle,
-                club_schedule_place: clubSchedulePlace || null
+                club_schedule_place: clubSchedulePlace || "no place"
             }
         });
 
@@ -170,18 +155,7 @@ export const addClubSchedule = async (req, res) => {
 //동아리 일정 삭제 API (DELETE /clubs/:clubId/clubSchdule/:clubScheduleId)
 export const deleteClubSchedule = async (req, res) => {
     try {
-        const { clubScheduleId } = req.params;
-
-        //동아리 일정 존재 확인
-        //이부분 middleware에 모듈화 시킬려고 했으나 controller에 포함하는게 나을것 같다 생각해서 분리 안했습니다.
-        const existingSchedule = await prisma.clubSchedule.findUnique({
-            where: { club_schedule_id: Number(clubScheduleId) }
-        });
-    
-        if (!existingSchedule) {
-            logger.info('동아리 일정이 존재하지 않음', {clubScheduleId});
-            return res.status(404).json({ message: "해당 동아리 일정을 찾을 수 없습니다." });
-        }
+        const { clubId, clubScheduleId } = req.params;
 
         //동아리 일정 삭제
         await prisma.clubSchedule.delete({
@@ -200,25 +174,17 @@ export const deleteClubSchedule = async (req, res) => {
 export const modifyClubSchedule = async (req, res) => {
     try {
         const { clubId, clubScheduleId } = req.params;
-        const { clubScheduleTime, clubScheduleTitle, clubSchedulePlace } = req.body;
-
-        //동아리 일정 존재 확인
-        const existingSchedule = await prisma.clubSchedule.findUnique({
-            where: { club_schedule_id: Number(clubScheduleId) }
-        });
-
-        if (!existingSchedule) {
-            logger.info('동아리 일정이 존재하지 않음', {clubScheduleId});
-            return res.status(404).json({ message: "해당 동아리 일정을 찾을 수 없습니다." });
-        }
+        const { clubScheduleStart, clubScheduleEnd, clubScheduleTitle, clubSchedulePlace } = req.body;
 
         //동아리 일정 수정 (부분 수정)
         const updatedClubSchedule = await prisma.clubSchedule.update({
             where: { club_schedule_id: Number(clubScheduleId) },
             data: {
-                club_schedule_time: clubScheduleTime ? new Date(clubScheduleTime) : existingSchedule.club_schedule_time,
-                club_schedule_title: clubScheduleTitle ?? existingSchedule.club_schedule_title,
-                club_schedule_place: clubSchedulePlace ?? existingSchedule.club_schedule_place
+                club_id: Number(clubId),
+                club_schedule_start: new Date(clubScheduleStart),
+                club_schedule_end: new Date(clubScheduleEnd),
+                club_schedule_title: clubScheduleTitle,
+                club_schedule_place: clubSchedulePlace || "no place"
             }
         });
 

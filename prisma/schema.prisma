@@ -35,6 +35,7 @@ model ClubSchedule {
   club_schedule_place String?
   created_at         DateTime  @default(now())
   club               Club      @relation(fields: [club_id], references: [club_id])
+  @@index([club_id, club_schedule_start])
 }
 
 model ClubMember {
@@ -56,6 +57,7 @@ model UserSchedule {
   user_id            Int
   created_at         DateTime  @default(now())
   user               WeBandUser @relation(fields: [user_id], references: [user_id])
+  @@index([user_id, user_schedule_start])
 }
 
 model Team {
@@ -91,6 +93,7 @@ model TeamSchedule {
   created_at         DateTime  @default(now())
   team               Team      @relation(fields: [team_id], references: [team_id])
   creator            WeBandUser @relation(fields: [created_by], references: [user_id])
+  @@index([team_id, team_schedule_start])
 }
 
 model WeBandUser {
