@@ -9,6 +9,7 @@ export const joinClub = async (req, res) => {
         const { clubCode } = req.body;
         const userId = req.user.user_id;
 
+        //모듈화 할려했으나 가독성 떨어질것같아서 안함
         if (!clubCode) {
             logger.error("동아리 가입 코드가 제공되지 않았습니다.");
             return res.status(400).json({ message: "동아리 가입 코드가 필요합니다." });
@@ -27,7 +28,6 @@ export const joinClub = async (req, res) => {
 
         const clubId = club.club_id;
 
-        //동아리 가입 여부 확인
         const existingMember = await prisma.clubMember.findFirst({
             where: {
                 club_id: clubId,
@@ -71,15 +71,7 @@ export const quitClub = async (req, res) => {
     try {
         const { clubId } = req.params;
         const userId = req.user.user_id;
-
-        //club 객체 생성
-        const club = await prisma.club.findUnique({
-            where: { club_id: Number(clubId) },
-        });
-        
-        if (!club) {
-            return res.status(404).json({ message: "존재하지 않는 동아리입니다." });
-        }
+        const { club_name } = req.club
 
         //clubMember 테이블에 사용자 삭제
         await prisma.clubMember.delete({
@@ -91,7 +83,14 @@ export const quitClub = async (req, res) => {
             },
         });
 
-        logger.info(`사용자 ${userId}가 동아리 ${club.club_name}에 탈퇴 했습니다.`);
+        await prisma.club.update({
+            where: { club_id: Number(clubId) },
+            data: {
+                member_count: { decrement: 1 }, // 인원 -1 
+            },
+        })
+
+        logger.info(`사용자 ${userId}가 동아리 ${club_name}에 탈퇴 했습니다.`);
         return res.status(200).json({ message: "동아리 탈퇴 성공 "});
     } catch(error) {
         logger.error(`동아리 탈퇴 중 오류 발생: ${error.message}`);
@@ -105,16 +104,7 @@ export const kickMember = async (req, res) => {
         const { clubId } = req.params;
         const { userId } = req.body;
         const myId = req.user.user_id;
-
-        //club 객체 생성
-        const club = await prisma.club.findUnique({
-            where: { club_id: Number(clubId) },
-        });
-        
-        if (!club) {
-            logger.info(`존재하지 않는 동아리 입니다 ${clubId}`)
-            return res.status(404).json({ message: "존재하지 않는 동아리입니다." });
-        }
+        const { club_name } = req.club;
 
         //추방할 user랑 회장 아이디랑 같으면 추방 불가능
         if ( userId == myId) {
@@ -132,7 +122,7 @@ export const kickMember = async (req, res) => {
             },
         });
 
-        logger.info(`사용자 ${userId}를 동아리 ${club.name}에서 내보냈습니다.`);
+        logger.info(`사용자 ${userId}를 동아리 ${club_name}에서 내보냈습니다.`);
         return res.status(200).json({ message: "동아리 퇴출 성공 "});
     } catch(error) {
         logger.error(`동아리 퇴출 중 오류 발생: ${error.message}`);
@@ -145,21 +135,11 @@ export const changeCode = async (req, res) => {
     try {
         const { clubId } = req.params;
         const { newCode } = req.body;
+        const { club_name } = req.club;
 
         if (!newCode) {
             console.error("동아리 가입 코드가 제공되지 않았습니다.");
             return res.status(400).json({ message: "동아리 가입 코드가 필요합니다." });
-        }
-
-        //club객체 생성
-        const club = await prisma.club.findUnique({
-            where: { club_id: Number(clubId) },
-        });
-    
-    
-        if (!club) {
-            logger.info(`동아리 정보 없음: clubId ${clubId}`);
-            return res.status(404).json({ message: "존재하지 않는 동아리입니다." });
         }
         
         //가입 코드 변경
@@ -170,7 +150,7 @@ export const changeCode = async (req, res) => {
             },
         });
 
-        logger.info(`동아리 ${club.club_name}에 가입 코드가 변경 되었습니다.`);
+        logger.info(`동아리 ${club_name}에 가입 코드가 변경 되었습니다.`);
         return res.status(200).json({ message: "동아리 가입 코드가 수정 되었습니다."});
     } catch (error) {
         logger.error(`동아리 코드 변경 중 오류 발생: ${error.message}`);
@@ -183,20 +163,11 @@ export const changeLeader = async (req, res) => {
     try {
         const { clubId } = req.params;
         const { newLeader} = req.body;
+        const { club_name } = req.club;
 
         if (!newLeader) {
             logger.info("새로 임명할 회장 누락");
             return res.status(400).json({ messsage: "회장으로 임명할 사용자를 선택해주세요."});
-        }
-        
-        //club 객체 생성
-        const club = await prisma.club.findUnique({
-            where: { club_id: Number(clubId) },
-        });
-    
-        if (!club) {
-            logger.info(`동아리 정보 없음: clubId ${clubId}`);
-            return res.status(404).json({ message: "존재하지 않는 동아리입니다." });
         }
         
         //동아리 회장 변경
@@ -207,7 +178,7 @@ export const changeLeader = async (req, res) => {
             },
         });
 
-        logger.info(`동아리 ${club.club_name}에 회장이 ${club.club_leader}로 변경되었습니다.`);
+        logger.info(`동아리 ${club_name}에 회장이 사용자: ${newLeader}로 변경되었습니다.`);
         return res.status(200).json({ message: "동아리 회장이 변경 되었습니다." });
     } catch (error) {
         logger.error(`동아리 회장 변경 중 오류 발생: ${error.message}`);
