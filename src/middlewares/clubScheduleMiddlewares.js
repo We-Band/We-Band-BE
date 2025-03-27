@@ -1,9 +1,9 @@
 import { PrismaClient } from "@prisma/client";
 import { logger } from "../utils/logger.js";
 
-const prisma = new PrismaClient();
+export const prisma = new PrismaClient();
 
-export const isExistClubSchedule = async (req, res, next) => {
+export const verifyClubSchedule = async (req, res, next) => {
     try {
         const { clubId, clubScheduleId } = req.params;
 
@@ -14,14 +14,39 @@ export const isExistClubSchedule = async (req, res, next) => {
         });
 
         if (!clubSchedule) {
+            logger.debug("존재하지 않는 동아리 일정");
             return res.status(404).json({ message: "존재하지 않는 동아리 일정입니다." });
         }
+        
+        req.clubSchedule = clubSchedule;
         next();
 
     } catch (error) {
         logger.error(`동아리 일정 존재 여부 검증 실패: ${error.message}, { error }`);
         return res.status(500).json({ message: "서버 오류 발생" });
     }
+};
+
+export const isMissingClubSchedule = async (req, res, next) => {
+        try {  
+            const { clubScheduleStart, clubScheduleEnd, clubScheduleTitle, clubSchedulePlace } = req.body;
+
+            //일정 시간, 제목은 필수로 들어가야함
+            if (!clubScheduleStart && !clubScheduleEnd) {
+                logger.debug("동아리 일정 시간 누락");
+                return res.status(400).json({ message: "동아리 일정 시간을 입력하세요." });
+            }
+
+            if (!clubScheduleTitle) {
+                logger.debug("동아리 일정 제목 누락");
+                return res.status(400).json({ message: "동아리 일정 제목을 입력하세요." });
+            }
+            next();
+        
+        }catch(error) {
+            logger.error(`동아리 일정 누락 검증 실패: ${error.message}, { error }`);
+            return res.status(500).json({ message: "서버 오류 발생" });
+        }
 };
     
 export const isConflictSchedule = async (req, res, next) => {
@@ -49,12 +74,13 @@ export const isConflictSchedule = async (req, res, next) => {
         });
 
         if (conflictSchedule) {
+            logger.debug("동알 일정이 이미 존재합니다.");
             return res.status(400).json({ message: "이 시간대에는 이미 일정이 존재합니다." });
         }
         next();
         
     } catch (error) {
-        logger.error(`사용자 일정 중복 검증 과정 중 실패: ${error.message}, { error }`);
+        logger.error(`동아리 일정 중복 검증 과정 중 실패: ${error.message}, { error }`);
         return res.status(500).json({ message: "서버 오류 발생" });
     }
 }; 

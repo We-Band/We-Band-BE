@@ -4,7 +4,7 @@ import { PrismaClient } from "@prisma/client";
 
 const router = express.Router();
 
-const prisma = new PrismaClient();
+export const prisma = new PrismaClient();
 
 /* 월간 or 주간 사용자 일정 조회 API (GET /user/:userId/userSchedule?month=2025-03) 
 or (GET /user/:userId/userSchedule?week=2025-03-10) */
@@ -25,17 +25,17 @@ export const viewUserSchedule = async (req, res) => {
             const userSchedules = await prisma.userSchedule.findMany({
                 where: {
                     user_id: Number(userId),
-                    user_schedule_time: {
+                    user_schedule_stasrt: {
                         gte: startDate,
                         lte: endDate
                     }
                 },
                 select: {
                     user_schedule_id: true,
-                    user_schedule_time: true,
+                    user_schedule_start: true,
                 },
                 orderBy: {
-                    user_schedule_time: 'asc'
+                    user_schedule_start: 'asc'
                 }
             });
 
@@ -61,24 +61,26 @@ export const viewUserSchedule = async (req, res) => {
             const userSchedules = await prisma.userSchedule.findMany({
                 where: {
                     user_id: Number(userId),
-                    user_schedule_time: {
+                    user_schedule_start: {
                         gte: startDate,
                         lte: endDate
                     }
                 },
                 select: {
                     user_schedule_id: true,
-                    user_schedule_time: true,
+                    user_schedule_start: true,
+                    user_schedule_end: true,
                     user_schedule_title: true,
                     is_public: true
                 },
                 orderBy: {
-                    user_schedule_time: 'asc'
+                    user_schedule_start: 'asc',
+                    user_schedule_end: 'asc'
                 }
             });
 
             //사용자 페이지와 접속한 사용자 id가 같아야지만 비공개 일정을 확인 가능
-            if (Number(userId) !== Number(myId) && userSchedules.is_public) {
+            if (Number(userId) !== Number(myId) && userSchedules.is_public ) {
                 userSchedules.user_schedule_title = "비공개 일정";
             }
 
@@ -101,42 +103,32 @@ export const viewUserSchedule = async (req, res) => {
 export const viewDetailUserSchedule = async (req, res) => {
     try {
         const { userId, userScheduleId } = req.params
-        const myId = req.userId
+        const myId = req.userId;
+        const userSchedule = req.userSchedule;
 
-        //사용자 일정 정보 존재 여부 검증
-        if (!userScheduleId) {
-            logger.error("조회할 사용자 일정이 없습니다. ")
-            return res.status(400)({ message: "조회할 사용자 일정이 없습니다." });
-        }
+        const { user_schedule_start, 
+            user_schedule_end, 
+            user_schedule_title,    
+            user_schedule_place,
+            is_public 
+        } = userSchedule;
 
-        //사용자 화면에 띄울 사용자 일정 정보 보냄
-        const userSchedules = await prisma.userSchedule.findUnique({
-            where: {
-                user_id: Number(userId),
-                user_schedule_id: Number(userScheduleId)
-            },
-            select: {
-                user_schedule_time: true,
-                user_schedule_title: true,
-                user_schedule_place: true,
-                is_public: true
-            }
-        });
+        // 응답으로 필요한 필드만 보냄
+        const result = {
+            user_schedule_start,
+            user_schedule_end,
+            user_schedule_title,
+            user_schedule_place
+        };
         
-        //일정이 없는 경우(잘못된 url 접근시)
-        if (!userSchedules) {
-            logger.error("사용자 일정을 찾을 수 없습니다.");
-            return res.status(400).json({ message: "사용자 일정을 찾을 수 없습니다." });
-        }
-
         //비공개 일정시 자세한 내용 숨기기(시간대만 알 수 있음)
-        if (Number(userId) !== Number(myId) && userSchedules.is_public) {
-            userSchedules.user_schedule_title = "비공개 일정";
-            userSchedules.user_schedule_place = "비공개 장소";
+        if (Number(userId) !== Number(myId) && is_public ) {
+            user_schedule_title = "비공개 일정";
+            user_schedule_place = "비공개 장소";
         }
 
-        logger.info('사용자 일정 정보를 보냈습니다.', { userScheduleId });
-        return res.json(userSchedules);
+        logger.debug(`사용자 일정 정보를 보냈습니다., ${ userScheduleId }`);
+        return res.json(result);
 
     } catch (error) {
         logger.error('서버 실행 중 오류 발생', error);
@@ -148,39 +140,17 @@ export const viewDetailUserSchedule = async (req, res) => {
 export const addUserSchedule = async (req, res) => {
     try {
         const { userId } = req.params;
-        const { userScheduleTime, userScheduleTitle, userSchedulePlace, isPublic } = req.body;
-
-        //일정 시간, 제목은 필수로 들어가야함
-        if (!userScheduleTime) {
-            return res.status(400).json({ message: "사용자 일정 시간을 입력하세요." });
-        }
-
-        if (!userScheduleTitle) {
-            return res.status(400).json({ message: "사용자 일정 제목을 입력하세요." });
-        }
-
-        // 기존 일정 중 겹치는 시간이 있는지 확인
-        const existingSchedule = await prisma.userSchedule.findFirst({
-            where: {
-                user_id: Number(userId),
-                user_schedule_time: new Date(userScheduleTime)
-            }
-        });
-
-        //존재하는 일정인지 확인
-        if (existingSchedule) {
-            logger.info('이미 일정이 존재하는 시간대')
-            return res.status(400).json({ message: "이 시간대에는 이미 일정이 존재합니다." });
-        }
+        const { userScheduleStart, userScheduleEnd, userScheduleTitle, userSchedulePlace, isPublic } = req.body;
 
         //사용자 일정 데이터베이스에 추가
         const newUserSchedule = await prisma.userSchedule.create({
             data: {
                 user_id: Number(userId),
-                user_schedule_time: new Date(userScheduleTime),
+                user_schedule_start: new Date(userScheduleStart),
+                user_schedule_end: new Date(userScheduleEnd),
                 user_schedule_title: userScheduleTitle,
                 user_schedule_place: userSchedulePlace || "no place",
-                is_public: isPublic || false
+                is_public: isPublic || true
             }
         });
 
@@ -196,16 +166,6 @@ export const addUserSchedule = async (req, res) => {
 export const deleteUserSchedule = async (req, res) => {
     try {
         const { userScheduleId } = req.params;
-
-        //사용자 일정 존재 확인
-        const existingSchedule = await prisma.userSchedule.findUnique({
-            where: { user_schedule_id: Number(userScheduleId) }
-        });
-    
-        if (!existingSchedule) {
-            logger.info('사용자 일정이 존재하지 않음', {userScheduleId});
-            return res.status(404).json({ message: "해당 사용자 일정을 찾을 수 없습니다." });
-        }
 
         //사용자 일정 삭제
         await prisma.userSchedule.delete({
@@ -225,16 +185,6 @@ export const modifyUserSchedule = async (req, res) => {
     try {
         const { userId, userScheduleId } = req.params;
         const { userScheduleTime, userScheduleTitle, userSchedulePlace, isPublic } = req.body;
-
-        //사용자 일정 존재 확인
-        const existingSchedule = await prisma.userSchedule.findUnique({
-            where: { user_schedule_id: Number(userScheduleId) }
-        });
-
-        if (!existingSchedule) {
-            logger.info('사용자 일정이 존재하지 않음', {userScheduleId});
-            return res.status(404).json({ message: "해당 사용자 일정을 찾을 수 없습니다." });
-        }
 
         //사용자 일정 수정 (부분 수정)
         const updatedUserSchedule = await prisma.userSchedule.update({

@@ -95,22 +95,25 @@ export const viewClubSchedule = async (req, res) => {
 export const viewDetailClubSchedule = async (req, res) => {
     try {
         const { clubId, clubScheduleId } = req.params
+        const clubSchedule = req.clubSchedule;
 
-        //사용자 화면에 띄울 동아리 일정 정보 보냄
-        const clubSchedules = await prisma.clubSchedule.findUnique({
-            where: {
-                club_id: Number(clubId),
-                club_schedule_id: Number(clubScheduleId)
-            },
-            select: {
-                club_schedule_time: true,
-                club_schedule_title: true,
-                club_schedule_place: true
-            }
-        });
+        const { club_schedule_start, 
+            club_schedule_end, 
+            club_schedule_title,    
+            club_schedule_place 
+        } = clubSchedule;
+
+        // 응답으로 필요한 필드만 보냄
+        const result = {
+            club_schedule_start,
+            club_schedule_end,
+            club_schedule_title,
+            club_schedule_place
+        };
+    
         
-        logger.info('동아리 일정 정보를 보냈습니다.', { clubScheduleId });
-        return res.json(clubSchedules);
+        logger.debug('동아리 일정 정보를 보냈습니다.', { clubScheduleId });
+        return res.json(result);
 
     } catch (error) {
         logger.error('서버 실행 중 오류 발생', error);
@@ -123,15 +126,6 @@ export const addClubSchedule = async (req, res) => {
     try {
         const { clubId } = req.params;
         const { clubScheduleStart, clubScheduleEnd, clubScheduleTitle, clubSchedulePlace } = req.body;
-
-        //일정 시간, 제목은 필수로 들어가야함
-        if (!clubScheduleStart && clubScheduleEnd) {
-            return res.status(400).json({ message: "동아리 일정 시간을 입력하세요." });
-        }
-
-        if (!clubScheduleTitle) {
-            return res.status(400).json({ message: "동아리 일정 제목을 입력하세요." });
-        }
 
         //동아리 일정 데이터베이스에 추가
         const newClubSchedule = await prisma.clubSchedule.create({
