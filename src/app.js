@@ -32,10 +32,10 @@ app.use(cookieParser());
 
 
 app.use("/auth", authRoutes);
-app.use("/user", userRoutes);
+app.use("/users", userRoutes);
 app.use("/clubs", clubRoutes);
 app.use("/clubs/:clubId/club-schedule", clubScheduleRoutes);
-app.use("/user/:userId/user-schedule", userScheduleRoutes);
+app.use("/users/:userId/user-schedule", userScheduleRoutes);
 app.use("/clubs/:clubId/team", teamRoutes);
 app.use("/clubs/:clubId/team/:teamId/teamSchedule", teamScheduleRoutes);
 
