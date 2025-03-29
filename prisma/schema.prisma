@@ -17,13 +17,14 @@ datasource db {
 model Club {
   club_id     Int             @id @default(autoincrement())
   club_name   String
+  club_img  String?
   club_leader  Int
   club_code   String  @unique
   member_count Int
   created_at         DateTime  @default(now())
-  schedules   ClubSchedule[]
-  members     ClubMember[]
-  teams       Team[]
+  schedules   ClubSchedule[]  
+  members     ClubMember[]     
+  teams       Team[]         
 }
 
 model ClubSchedule {
@@ -34,17 +35,31 @@ model ClubSchedule {
   club_schedule_title String?
   club_schedule_place String?
   created_at         DateTime  @default(now())
-  club               Club      @relation(fields: [club_id], references: [club_id])
+  club               Club      @relation(fields: [club_id], references: [club_id], onDelete: Cascade) 
   @@index([club_id, club_schedule_start])
 }
 
 model ClubMember {
   club_id Int
   user_id Int
-  club    Club    @relation(fields: [club_id], references: [club_id])
-  user    WeBandUser @relation(fields: [user_id], references: [user_id])
+  created_at         DateTime  @default(now())
+  club    Club    @relation(fields: [club_id], references: [club_id], onDelete: Cascade)
+  user    WeBandUser @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
 
   @@id([club_id, user_id])
+}
+
+model WeBandUser {
+  user_id      Int           @id @default(autoincrement())
+  kakao_id     BigInt        @unique
+  profile_img  String?
+  user_name    String
+  email        String        @unique
+  clubMembers  ClubMember[]  
+  teamCreators Team[] 
+  teamMembers  TeamMember[]   
+  schedules    UserSchedule[]   
+  teamSchedules TeamSchedule[]   
 }
 
 model UserSchedule {
@@ -56,7 +71,7 @@ model UserSchedule {
   is_public           Boolean   @default(true)
   user_id            Int
   created_at         DateTime  @default(now())
-  user               WeBandUser @relation(fields: [user_id], references: [user_id])
+  user               WeBandUser @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
   @@index([user_id, user_schedule_start])
 }
 
@@ -66,17 +81,19 @@ model Team {
   team_name   String
   club_id     Int
   created_at  DateTime       @default(now())
-  club        Club           @relation(fields: [club_id], references: [club_id])
+  club        Club           @relation(fields: [club_id], references: [club_id], onDelete: Cascade)  
   creator     WeBandUser     @relation(fields: [created_by], references: [user_id])
-  members     TeamMember[]
-  schedules   TeamSchedule[]
+  members     TeamMember[]   
+  schedules   TeamSchedule[] 
+  @@index([team_id, club_id])
 }
 
 model TeamMember {
   team_id Int
   user_id Int
-  team    Team    @relation(fields: [team_id], references: [team_id], onDelete: Cascade)
-  user    WeBandUser @relation(fields: [user_id], references: [user_id])
+  created_at         DateTime  @default(now())
+  team    Team    @relation(fields: [team_id], references: [team_id], onDelete: Cascade)  
+  user    WeBandUser @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
 
   @@id([team_id, user_id])
 }
@@ -91,20 +108,9 @@ model TeamSchedule {
   team_id            Int
   created_by         Int
   created_at         DateTime  @default(now())
-  team               Team      @relation(fields: [team_id], references: [team_id])
+  team               Team      @relation(fields: [team_id], references: [team_id], onDelete: Cascade)
   creator            WeBandUser @relation(fields: [created_by], references: [user_id])
   @@index([team_id, team_schedule_start])
 }
 
-model WeBandUser {
-  user_id      Int           @id @default(autoincrement())
-  kakao_id     BigInt        @unique
-  profile_img  String?
-  user_name    String
-  email        String        @unique
-  clubMembers  ClubMember[]
-  teamCreators Team[]
-  teamMembers  TeamMember[]
-  schedules    UserSchedule[]
-  teamSchedules TeamSchedule[]
-}
+
