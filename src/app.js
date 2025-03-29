@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
+import compression from "compression";
 import { logger, morganMiddleware } from "./utils/logger.js";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
@@ -30,6 +31,20 @@ app.use(express.json()); // json
 app.use(morganMiddleware); //api 로그 기록(개발 환경에서만)
 app.use(cookieParser());
 
+//gzip 압축 미들웨어 설정
+app.use(
+  compression({
+    level: 6,
+    threshold: 100 * 1000, //100KB 이상인 경우에만 압축
+    filter: (req, res) => {
+      if (req.headers["x-no-compression"]) {
+        // header에 x-no-compression이 있으면, 압축하지 않도록 false를 반환한다.
+        return false;
+      }
+      return compression.filter(req, res); 
+    },
+  })
+);
 
 app.use("/auth", authRoutes);
 app.use("/users", userRoutes);
