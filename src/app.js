@@ -22,7 +22,7 @@ const corsOptions = {
   ],
   credentials: true, // 쿠키 및 인증 헤더 허용
   allowedHeaders: ['Content-Type', 'Authorization', 'x-access-token'],
-  exposedHeaders: ['x-access-token'],
+  exposedHeaders: ['x-access-token', 'Content-Encoding'],
 };
 
 // Express 애플리케이션 설정
@@ -51,8 +51,8 @@ app.use("/users", userRoutes);
 app.use("/clubs", clubRoutes);
 app.use("/clubs/:clubId/club-schedules", clubScheduleRoutes);
 app.use("/users/:userId/user-schedules", userScheduleRoutes);
-app.use("/clubs/:clubId/team", teamRoutes);
-app.use("/clubs/:clubId/team/:teamId/team-schedules", teamScheduleRoutes);
+app.use("/clubs/:clubId/teams", teamRoutes);
+app.use("/clubs/:clubId/teams/:teamId/team-schedules", teamScheduleRoutes);
 
 app.get("/", (req, res) => {
   res.status(200).json({ message: "서버가 정상적으로 동작 중입니다!" });
