@@ -20,7 +20,9 @@ router.post("/", createTeam); // 팀생성
 
 router.patch("/:teamId/profile", verifyTeam, isTeamLeader, changeTeamProfile);
 
-router.patch("/:teamId/profile", verifyTeam, isTeamLeader, changeTeamName); //
+router.patch("/:teamId/name", verifyTeam, isTeamLeader, changeTeamName); //
+
+router.patch("/:teamId/leader", verifyTeam, isTeamLeader, changeTeamLeader); // 팀장 변경
 
 router.post("/:teamId/add-member", verifyTeam, isTeamLeader, addTeamMembers); // 팀원 추가
 
@@ -30,6 +32,5 @@ router.delete("/:teamId/kick-member", verifyTeam, isUserJoinedTeam, isTeamLeader
 
 router.delete("/:teamId/leave", verifyTeam, isMyTeam, leaveTeam); // 팀 탈퇴
 
-router.patch("/:teamId/leader", verifyTeam, isTeamLeader, changeTeamLeader); // 팀장 변경
 
 export default router;

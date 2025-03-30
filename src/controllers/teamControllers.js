@@ -10,6 +10,7 @@ export const getTeam = async (req, res) => {
 
         if (type == "my") {
             const userId = req.user.user_id;
+
             const myTeams = await prisma.teamMember.findMany({
                 where: {
                     user_id: Number(userId),
@@ -27,7 +28,7 @@ export const getTeam = async (req, res) => {
                     }
                 }
             });
-            logger.debug("내 팀 목록 조회 성공", { clubId, myTeam });
+            logger.debug("내 팀 목록 조회 성공", { clubId, myTeams });
             return res.status(200).json(myTeams);
         } 
         
@@ -48,7 +49,7 @@ export const getTeam = async (req, res) => {
         }
     } catch (error) {
         logger.error(`팀 목록 조회 검증 실패: ${error.message}`, { error });
-        return res.status(500).json({ message: "팀 목록 조회 검증 실패" });
+        return res.status(500).json({ message: "팀 목록 조회 중 오류가 발생했습니다." });
     }
 };
 
@@ -129,7 +130,7 @@ export const viewMemberList = async (req, res) => {
     }
 };
 
-export const creatTeam = async (req, res) => {
+export const createTeam = async (req, res) => {
     try {
         const { clubId } = req.params;
         const { teamName, members } = req.body;
@@ -185,7 +186,7 @@ export const creatTeam = async (req, res) => {
         return res.status(201).json({ message: "팀이 성공적으로 생성되었습니다." });
     } catch (error) {
         logger.error("팀 생성 실패: ", error);
-        return res.status(500).json({ message: "팀 생성 중 서버 오류 발생" });
+        return res.status(500).json({ message: "팀 생성 중 서버 오류가 발생했습니다." });
     }
 };
 
@@ -338,22 +339,22 @@ export const leaveTeam = async (req, res) => {
         });
 
         logger.debug("팀원 삭제 성공", { clubId, teamId, userId });
-        return res.status(200).json({ message: "팀원이 성공적으로 삭제되었습니다." });
+        return res.status(200).json({ message: "팀에서 성공적으로 탈퇴되었습니다." });
     } catch (error) {
         logger.error(`팀원 삭제 검증 실패: ${error.message}`, { error });
-        return res.status(500).json({ message: "팀원 삭제 중 오류 발생" });
+        return res.status(500).json({ message: "팀 탈퇴 중 오류 발생" });
     }
 };
 
 export const changeTeamLeader = async (req, res) => {
     try {
         const { clubId, teamId } = req.params;
-        const { userId } = req.body; // 새로운 팀장 ID
+        const { newLeader } = req.body; // 새로운 팀장 ID
         
         // 팀장 변경
         await prisma.team.update({
             where: {
-                team_id: Number(teamId),
+                team_id: Number(newLeader),
             },
             data: {
                 creator: Number(userId),

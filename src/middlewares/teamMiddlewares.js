@@ -25,7 +25,7 @@ export const verifyTeam = async (req, res, next) => {
     next();
   } catch(error) {
     logger.error(`팀 여부 검증 실패${error.message}`, { error } );
-    return res.status(500).json({ message: "서버 오류 발생" });
+    return res.status(500).json({ message: "팀 존재 여부 검증 중 오류가 발생했습니다." });
   }
 };
 
@@ -62,7 +62,7 @@ export const isMyTeam = async (req, res, next) => {
         });
 
         if (!teamMember) {
-            logger.debug("팀에 가입하지 않은 사용자 입니다.");
+            logger.debug("팀에 가입되지 않은 사용자 입니다.");
             return res.status(409).json({ message: "동아리에 가입되지 않은 사용자입니다."})
         }
 
@@ -91,7 +91,7 @@ export const isUserJoinedTeam = async (req, res, next) => {
 
 		if (!teamMember) {
 			logger.debug("팀에 가입하지 않은 사용자 입니다.");
-			return res.status(409).json({ message: "동아리에 가입되지 않은 사용자입니다."})
+			return res.status(409).json({ message: "팀에 가입되지 않은 사용자입니다."})
 		}
 
 		logger.debug("가입 여부 검증 완료");
