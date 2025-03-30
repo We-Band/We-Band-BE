@@ -13,10 +13,10 @@ router.get("/", viewUserSchedule);
 
 router.get("/:userScheduleId", verifyUserSchedule, viewDetailUserSchedule);
 
-router.post("/", isMine, isConflictUserSchedule, isMissingUserSchedule, addUserSchedule);
+router.post("/", isMine, isMissingUserSchedule, isConflictUserSchedule,  addUserSchedule);
 
 router.delete("/:userScheduleId", isMine, verifyUserSchedule, deleteUserSchedule);
 
-router.patch("/:userScheduleId", isMine, verifyUserSchedule, isConflictUserSchedule, modifyUserSchedule);
+router.patch("/:userScheduleId",isMine, verifyUserSchedule,  isMissingUserSchedule, isConflictUserSchedule, modifyUserSchedule);
 
 export default router;
