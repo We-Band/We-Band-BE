@@ -118,14 +118,10 @@ export const viewClub = async (req, res) => {
             memberCount: member_count,
             leaderId: club_leader,
             createdAt: clubCreatedAt,
-            members: members,
         };
 
         logger.debug(`동아리 정보 조회 성공, ${ clubId }, ${ clubInfo }`);
-        return res.status(200).json({
-            message: "동아리 정보 조회 성공",
-            clubInfo,
-        });
+        return res.status(200).json(clubInfo, members);
     } catch (error) {
         logger.error(`동아리 조회 중 오류 발생: ${error.message}`);
         return res.status(500).json({ message: "동아리 조회 중 오류가 발생했습니다." });

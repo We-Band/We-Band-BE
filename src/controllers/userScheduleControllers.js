@@ -87,7 +87,7 @@ export const viewDetailUserSchedule = async (req, res) => {
         if (Number(userId) !== Number(myId) && is_public ) {
             user_schedule_title = "비공개 일정";
             user_schedule_place = "";
-            user_schedule_participants = "";
+            user_schedule_participants = "비공개 일정";
         }
 
         logger.debug(`사용자 일정 정보를 보냈습니다., ${ userScheduleId }`);

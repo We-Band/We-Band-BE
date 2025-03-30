@@ -12,14 +12,12 @@ router.post("/", joinClub); //동아리 가입
 
 router.get("/", verifyClub, viewClub); //동아리 정보 조회
 
-router.get("/:clubId", viewClub); 
+router.delete("/:clubId", verifyClub, isMyClub, quitClub); //동아리 탈퇴
 
-router.delete("/:clubId", verifyClub, isMyClub, quitClub);
+router.delete("/:clubId/kick", verifyClub, isLeader, isUserJoinedClub, kickMember); //동아리 추방
 
-router.delete("/:clubId/kick", verifyClub, isLeader, isUserJoinedClub, kickMember);
+router.patch("/:clubId/setting", verifyClub, isLeader, changeCode); //동아리 가입 코드 변경
 
-router.patch("/:clubId/setting", verifyClub, isLeader, changeCode);
-
-router.patch("/:clubId/leader", verifyClub, isLeader, changeLeader);
+router.patch("/:clubId/leader", verifyClub, isLeader, changeLeader); //동아리 회장 변경
 
 export default router;

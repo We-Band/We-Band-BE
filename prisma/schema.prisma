@@ -78,15 +78,16 @@ model UserSchedule {
 
 model Team {
   team_id     Int            @id @default(autoincrement())
-  created_by  Int
+  team_leader  Int
   team_name   String
+  team_img  String?
   club_id     Int
   created_at  DateTime       @default(now())
   club        Club           @relation(fields: [club_id], references: [club_id], onDelete: Cascade)  
   creator     WeBandUser     @relation(fields: [created_by], references: [user_id])
   members     TeamMember[]   
   schedules   TeamSchedule[] 
-  @@index([team_id, club_id])
+  @@index([club_id])
 }
 
 model TeamMember {
