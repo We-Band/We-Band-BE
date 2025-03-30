@@ -49,10 +49,10 @@ app.use(
 app.use("/auth", authRoutes);
 app.use("/users", userRoutes);
 app.use("/clubs", clubRoutes);
-app.use("/clubs/:clubId/club-schedule", clubScheduleRoutes);
-app.use("/users/:userId/user-schedule", userScheduleRoutes);
+app.use("/clubs/:clubId/club-schedules", clubScheduleRoutes);
+app.use("/users/:userId/user-schedules", userScheduleRoutes);
 app.use("/clubs/:clubId/team", teamRoutes);
-app.use("/clubs/:clubId/team/:teamId/teamSchedule", teamScheduleRoutes);
+app.use("/clubs/:clubId/team/:teamId/team-schedules", teamScheduleRoutes);
 
 app.get("/", (req, res) => {
   res.status(200).json({ message: "서버가 정상적으로 동작 중입니다!" });

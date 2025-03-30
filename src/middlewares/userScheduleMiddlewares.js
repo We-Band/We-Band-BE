@@ -13,7 +13,7 @@ export const isMine = async (req, res, next) => {
 
         //접속한 일정이 내 일정하고 같은지 확인
         if (Number(userId) !== myId) {
-            logger.info(`기능에 접근할 수 없습니다, approached user: ${ myId }`);
+            logger.info(`해당 기능에 접근할 수 없습니다, approached user: ${ myId }`);
             return res.status(401).json({ message: '해당 기능에 접근할 권한이 없습니다.' });
         }
 
@@ -30,18 +30,21 @@ export const verifyUserSchedule = async (req, res, next) => {
         const { userId, userScheduleId } = req.params;
 
         const userSchedule = await prisma.userSchedule.findUnique({
-            where: { user_schedule_id: Number(userScheduleId) }
+            where: { 
+                user_schedule_id: Number(userScheduleId) 
+            }
         });
     
         if (!userSchedule) {
             logger.info('사용자 일정이 존재하지 않음', {userScheduleId});
-            return res.status(404).json({ message: "해당 사용자 일정을 찾을 수 없습니다." });
+            return res.status(404).json({ message: "사용자 일정을 찾을 수 없습니다." });
         }
 
         req.userSchedule = userSchedule;
         next();
     }catch (errror) {
-        logger.error(``)
+        logger.error(`사용자 일정 존재 여부 검증 실패: ${error.message}`, { error });
+        return res.status(500).json({ message: "사용자 일정 존재 여부 검증 중 오류 발생" });
     }
 };
 
@@ -51,19 +54,19 @@ export const isMissingUserSchedule = async (req, res, next) => {
 
         //일정 시간, 제목은 필수로 들어가야함
         if (!userScheduleStart && !userScheduleEnd) {
-            logger.debug("동아리 일정 시간 누락");
+            logger.debug("사용자 일정 시간 누락");
             return res.status(400).json({ message: "동아리 일정 시간을 입력하세요." });
         }
 
         if (!userScheduleTitle) {
-            logger.debug("동아리 일정 제목 누락");
+            logger.debug("사용자 일정 제목 누락");
             return res.status(400).json({ message: "동아리 일정 제목을 입력하세요." });
         }
         next();
     
     }catch(error) {
-        logger.error(`동아리 일정 누락 검증 실패: ${error.message}, { error }`);
-        return res.status(500).json({ message: "서버 오류 발생" });
+        logger.error(`사용자 일정 누락 검증 실패: ${error.message}, { error }`);
+        return res.status(500).json({ message: "사용자 일정 누락 검증 중 오류 발생" });
     }
 };
 
@@ -93,13 +96,12 @@ export const isConflictUserSchedule = async (req, res, next) => {
         });
 
         if (conflictSchedule) {
-            logger.debug("사용자 일정이 이미 존재함 ")
+            logger.debug("이 시간대에는 이미 일정이 존재합니다."); 
             return res.status(400).json({ message: "이 시간대에는 이미 일정이 존재합니다." });
         }
         next();
-        
     } catch (error) {
         logger.error(`사용자 일정 중복 검증 과정 중 실패: ${error.message}, { error }`);
-        return res.status(500).json({ message: "서버 오류 발생" });
+        return res.status(500).json({ message: "사용자 일정 중복 검증 과정 중 오류 발생" });
     }
 };

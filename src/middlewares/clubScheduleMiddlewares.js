@@ -15,7 +15,7 @@ export const verifyClubSchedule = async (req, res, next) => {
 
         if (!clubSchedule) {
             logger.debug("존재하지 않는 동아리 일정");
-            return res.status(404).json({ message: "존재하지 않는 동아리 일정입니다." });
+            return res.status(404).json({ message: "동아리 일정을 찾을 수 없습니다." });
         }
         
         req.clubSchedule = clubSchedule;
@@ -28,7 +28,7 @@ export const verifyClubSchedule = async (req, res, next) => {
 
 export const isMissingClubSchedule = async (req, res, next) => {
         try {  
-            const { clubScheduleStart, clubScheduleEnd, clubScheduleTitle, clubSchedulePlace } = req.body;
+            const { clubScheduleStart, clubScheduleEnd, clubScheduleTitle } = req.body;
 
             //일정 시간, 제목은 필수로 들어가야함
             if (!clubScheduleStart && !clubScheduleEnd) {

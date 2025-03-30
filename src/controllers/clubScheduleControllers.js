@@ -6,7 +6,7 @@ const router = express.Router();
 const prisma = new PrismaClient();
 
 
-//(GET /clubs/:clubId/clubSchedule?day=2025-03-10) 
+//(GET /clubs/:clubId/clubSchedules?day=2025-03-10) 
 export const viewClubSchedule = async (req, res) => {
     try {
         const { clubId } = req.params;
@@ -41,7 +41,6 @@ export const viewClubSchedule = async (req, res) => {
             },
             orderBy: {
                 club_schedule_start: 'asc',
-                club_schedule_end: 'asc',
             }
         });
 
@@ -96,7 +95,7 @@ export const addClubSchedule = async (req, res) => {
                 club_schedule_start: new Date(clubScheduleStart),
                 club_schedule_end: new Date(clubScheduleEnd),
                 club_schedule_title: clubScheduleTitle,
-                club_schedule_place: clubSchedulePlace || "no place"
+                club_schedule_place: clubSchedulePlace || ""
             }
         });
 
@@ -140,7 +139,7 @@ export const modifyClubSchedule = async (req, res) => {
                 club_schedule_start: new Date(clubScheduleStart),
                 club_schedule_end: new Date(clubScheduleEnd),
                 club_schedule_title: clubScheduleTitle,
-                club_schedule_place: clubSchedulePlace || "no place"
+                club_schedule_place: clubSchedulePlace || ""
             }
         });
 
