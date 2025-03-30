@@ -58,7 +58,7 @@ export const joinClub = async (req, res) => {
             },
         });
 
-        logger.info(`사용자 ${userId}가 동아리 ${club.club_name}에 가입함`);
+        logger.info(`사용자 ${userId}가 동아리 ${clubId}에 가입함`);
         return res.status(200).json({ message: "동아리에 성공적으로 가입했습니다." });
 
     } catch (error) {
@@ -138,7 +138,6 @@ export const quitClub = async (req, res) => {
     try {
         const { clubId } = req.params;
         const userId = req.user.user_id;
-        const club_name = req.club.club_name;
 
         //clubMember 테이블에 사용자 삭제
         await prisma.clubMember.delete({
@@ -158,7 +157,7 @@ export const quitClub = async (req, res) => {
             },
         });
 
-        logger.info(`사용자 ${userId}가 동아리 ${club_name}에 탈퇴 했습니다.`);
+        logger.info(`사용자 ${userId}가 동아리 ${clubId}에 탈퇴 했습니다.`);
         return res.status(200).json({ message: "동아리 탈퇴를 성공했습니다." });
     } catch(error) {
         logger.error(`동아리 탈퇴 중 오류 발생: ${error.message}`);
@@ -172,10 +171,9 @@ export const kickMember = async (req, res) => {
         const { clubId } = req.params;
         const { userId } = req.body;
         const myId = req.user.user_id;
-        const clubName = req.club.club_name;
 
         //추방할 user랑 회장 아이디랑 같으면 추방 불가능
-        if ( userId == myId) {
+        if (userId == myId) {
             logger.debug('회장은 퇴출할 수 없습니다');
             return res.status(405).json({ message: "회장은 퇴출 불가능합니다."});
         }
@@ -190,7 +188,7 @@ export const kickMember = async (req, res) => {
             },
         });
 
-        logger.info(`사용자 ${userId}를 동아리 ${clubName}에서 내보냈습니다.`);
+        logger.info(`사용자 ${userId}를 동아리 ${clubId}에서 내보냈습니다.`);
         return res.status(200).json({ message: "회원 강퇴를 성공했습니다."});
     } catch(error) {
         logger.error(`동아리 퇴출 중 오류 발생: ${error.message}`);
@@ -203,7 +201,6 @@ export const changeCode = async (req, res) => {
     try {
         const { clubId } = req.params;
         const { newCode } = req.body;
-        const { clubName } = req.club.club_name;
 
         //가입 코드 누락 여부 검증
         if (!newCode) {
@@ -219,7 +216,7 @@ export const changeCode = async (req, res) => {
             },
         });
 
-        logger.info(`동아리 ${clubName}에 가입 코드가 변경 되었습니다.`);
+        logger.info(`동아리 ${clubId}에 가입 코드가 변경 되었습니다.`);
         return res.status(200).json({ message: "동아리 가입 코드가 수정 되었습니다."});
     } catch (error) {
         logger.error(`동아리 코드 변경 중 오류 발생: ${error.message}`);
@@ -232,7 +229,6 @@ export const changeLeader = async (req, res) => {
     try {
         const { clubId } = req.params;
         const { newLeader } = req.body;
-        const { clubName } = req.club.club_name;
 
         //변경할 회장 아이디 누락 여부 검증
         if (!newLeader) {
@@ -248,7 +244,7 @@ export const changeLeader = async (req, res) => {
             },
         });
 
-        logger.info(`동아리 ${clubName}에 회장이 사용자: ${newLeader}로 변경되었습니다.`);
+        logger.info(`동아리 ${clubId}에 회장이 사용자: ${newLeader}로 변경되었습니다.`);
         return res.status(200).json({ message: "동아리 회장이 변경 되었습니다." });
     } catch (error) {
         logger.error(`동아리 회장 변경 중 오류 발생: ${error.message}`);

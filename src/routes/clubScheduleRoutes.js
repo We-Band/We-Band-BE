@@ -14,7 +14,7 @@ router.get("/", viewClubSchedule);
 
 router.get("/:clubScheduleId", verifyClubSchedule, viewDetailClubSchedule)
 
-router.post("/", isLeader, isConflictSchedule, isMissingClubSchedule, addClubSchedule);
+router.post("/", isLeader, isMissingClubSchedule, isConflictSchedule, addClubSchedule);
 
 router.delete("/:clubScheduleId", isLeader, verifyClubSchedule, deleteClubSchedule);
 

@@ -20,10 +20,9 @@ export const verifyClubSchedule = async (req, res, next) => {
         
         req.clubSchedule = clubSchedule;
         next();
-
     } catch (error) {
-        logger.error(`동아리 일정 존재 여부 검증 실패: ${error.message}, { error }`);
-        return res.status(500).json({ message: "서버 오류 발생" });
+        logger.error(`동아리 일정 존재 여부 검증 실패: ${error.message}`, { error });
+        return res.status(500).json({ message: "동아리 일정 존재 여부 검증 중 오류 발생" });
     }
 };
 
@@ -34,18 +33,17 @@ export const isMissingClubSchedule = async (req, res, next) => {
             //일정 시간, 제목은 필수로 들어가야함
             if (!clubScheduleStart && !clubScheduleEnd) {
                 logger.debug("동아리 일정 시간 누락");
-                return res.status(400).json({ message: "동아리 일정 시간을 입력하세요." });
+                return res.status(400).json({ message: "동아리 일정 시간이 누락되었습니다." });
             }
 
             if (!clubScheduleTitle) {
                 logger.debug("동아리 일정 제목 누락");
-                return res.status(400).json({ message: "동아리 일정 제목을 입력하세요." });
+                return res.status(400).json({ message: "동아리 일정 제목이 누락되었습니다." });
             }
-            next();
-        
+            next();   
         }catch(error) {
-            logger.error(`동아리 일정 누락 검증 실패: ${error.message}, { error }`);
-            return res.status(500).json({ message: "서버 오류 발생" });
+            logger.error(`동아리 일정 누락 검증 실패: ${error.message}`, { error });
+            return res.status(500).json({ message: "동아리 일정 누락 검증 중 오류 발생" });
         }
 };
     
@@ -74,13 +72,12 @@ export const isConflictSchedule = async (req, res, next) => {
         });
 
         if (conflictSchedule) {
-            logger.debug("동알 일정이 이미 존재합니다.");
+            logger.debug("이 시간대에는 이미 일정이 존재합니다.");
             return res.status(400).json({ message: "이 시간대에는 이미 일정이 존재합니다." });
         }
-        next();
-        
+        next(); 
     } catch (error) {
         logger.error(`동아리 일정 중복 검증 과정 중 실패: ${error.message}, { error }`);
-        return res.status(500).json({ message: "서버 오류 발생" });
+        return res.status(500).json({ message: "동아리 일정 중복 검증 과정 중 오류 발생" });
     }
 }; 
