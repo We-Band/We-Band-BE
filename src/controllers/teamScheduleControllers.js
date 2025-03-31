@@ -48,7 +48,7 @@ export const viewTeamSchedule = async (req, res) => {
 
     } catch (error) {
         logger.error(`팀 일정 정보 조회 중 오류 발생: ${error.message}`, error);
-        return res.status(500).json({ message: "팀 일정 정보 조회 중 오류가 발생했습니다." });
+        return res.status(500).json({ message: "팀 주간 일정 조회 중 오류가 발생했습니다." });
     }
 };
 
@@ -78,7 +78,7 @@ export const viewDetailTeamSchedule = async (req, res) => {
         return res.json(result);
     } catch (error) {
         logger.error(`팀 일정 정보 조회 중 오류 발생: ${error.message}`, error);
-        return res.status(400).json({ message: "팀 일정 정보 조회 중 오류가 발생했습니다."});
+        return res.status(400).json({ message: "팀 일정 조회 중 오류가 발생했습니다."});
     }
 };
 
@@ -124,7 +124,7 @@ export const deleteTeamSchedule = async (req, res) => {
         logger.error('팀 일정 삭제 중 오류 발생:', error);
         return res.status(500).json({ message: "팀 일정 삭제 중 오류 발생" });
     }
-    
+
 };
 
 //동아리 일정 수정 API (PATCH /clubs/:clubId/clubSchedule/:clubScheduld)

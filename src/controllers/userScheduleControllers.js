@@ -54,7 +54,7 @@ export const viewUserSchedule = async (req, res) => {
 
     } catch (error) {
         logger.error(`사용자 정보 조회 중 오류 발생: ${error.message}`, error);
-        return res.status(500).json({ message: "사용자 정보 조회 중 오류가 발생했습니다." });
+        return res.status(500).json({ message: "사용자 주간 일정 조회 중 오류가 발생했습니다." });
     }
 };
 

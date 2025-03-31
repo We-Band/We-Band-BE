@@ -17,6 +17,6 @@ router.post("/", isMine, isMissingUserSchedule, isConflictUserSchedule,  addUser
 
 router.delete("/:userScheduleId", isMine, verifyUserSchedule, deleteUserSchedule); //일정 삭제
 
-router.patch("/:userScheduleId",isMine, verifyUserSchedule,  isMissingUserSchedule, isConflictUserSchedule, modifyUserSchedule); //일정 수정
+router.patch("/:userScheduleId", isMine, verifyUserSchedule,  isMissingUserSchedule, isConflictUserSchedule, modifyUserSchedule); //일정 수정
 
 export default router;

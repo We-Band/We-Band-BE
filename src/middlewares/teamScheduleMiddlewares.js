@@ -26,6 +26,32 @@ export const verifyTeamSchedule = async (req, res, next) => {
     }
 };
 
+export const isTeamMember = async (req, res, next) => {
+    try {
+        const { clubId, teamId } = req.params;
+        const userId = req.user.user_id;
+        
+        const isTeamMember = await prisma.teamMember.findFirst({
+            where: {
+                team_id: Number(teamId),
+                user_id: Number(userId),
+            },
+        });
+
+        if (!isTeamMember) {
+            logger.debug("팀 멤버가 아닙니다.");
+            return res.status(403).json({ message: "해당 기능에 접근할 권한이 없습니다. "});
+        }
+
+        logger.debug("팀 멤버 여부 검증 완료");
+        next();
+    } catch (error) {
+        logger.error(`팀 멤버 여부 검증 실패: ${error.message}`, { error });
+        return res.status(500).json({ message: "팀 멤버 여부 검증 중 오류 발생" });
+    }
+};
+
+
 export const isMissingTeamSchedule = async (req, res, next) => {
         try {  
             const { teamScheduleStart, teamScheduleEnd, teamScheduleTitle } = req.body;
