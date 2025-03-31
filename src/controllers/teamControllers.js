@@ -269,7 +269,7 @@ export const addTeamMembers = async (req, res) => {
         await prisma.teamMember.createMany({
             data: members.map(member => ({
                 team_id: Number(teamId),
-                user_id: member.user_id,
+                user_id: member.userId,
             })),
         });
 

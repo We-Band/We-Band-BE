@@ -146,3 +146,23 @@ export const handleKakaoUser = async (req, res) => {
     res.status(500).send('Failed to process user');
   }
 };
+
+export const logout = async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(400).json({ message: "로그인 상태가 아닙니다." });
+    }
+
+    res.cookie("refreshToken", "", { 
+      httpOnly: true, 
+      secure: process.env.NODE_ENV !== "dev", 
+      sameSite: "None", 
+      expires: new Date(0) 
+    });
+    
+    res.status(200).json({ message: "로그아웃 성공" });
+  } catch (error) {
+    logger.error(`로그아웃 실패:  + ${error.message}`, error);
+    res.status(500).json({ message: "로그아웃 실패" });
+  }
+};
