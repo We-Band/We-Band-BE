@@ -48,7 +48,7 @@ export const viewClubSchedule = async (req, res) => {
         return res.json(clubSchedules);
 
     } catch (error) {
-        logger.error(`동아리 정보 조회 중 오류 발생: ${error.message}`, error);
+        logger.error(`동아리 일정 정보 조회 중 오류 발생: ${error.message}`, error);
         return res.status(500).json({ message: "동아리 정보 조회 중 오류가 발생했습니다." });
     }
 };
@@ -99,7 +99,7 @@ export const addClubSchedule = async (req, res) => {
             }
         });
 
-        logger.info('동아리 일정이 추가 됐습니다.')
+        logger.debug('동아리 일정이 추가 됐습니다.')
         return res.status(201).json(newClubSchedule);
     } catch (error) {
         logger.error('동아리 일정 추가 중 오류 발생:', error);
@@ -117,7 +117,7 @@ export const deleteClubSchedule = async (req, res) => {
             where: { club_schedule_id: Number(clubScheduleId) }
         });
 
-        logger.info('동아리 일정이 삭제 됐습니다.', { clubScheduleId });
+        logger.debug('동아리 일정이 삭제 됐습니다.', { clubScheduleId });
         return res.status(200).json({ message: "동아리 일정이 삭제되었습니다." });
     } catch (error) {
         logger.error('동아리 일정 삭제 중 오류 발생:', error);
@@ -143,7 +143,7 @@ export const modifyClubSchedule = async (req, res) => {
             }
         });
 
-        logger.info('동아리 일정이 수정되었습니다.');
+        logger.debug('동아리 일정이 수정되었습니다.');
 
         return res.status(200).json(updatedClubSchedule);
     } catch (error) {

@@ -32,5 +32,4 @@ router.delete("/:teamId/kick-member", verifyTeam, isUserJoinedTeam, isTeamLeader
 
 router.delete("/:teamId/leave", verifyTeam, isMyTeam, leaveTeam); // 팀 탈퇴
 
-
 export default router;

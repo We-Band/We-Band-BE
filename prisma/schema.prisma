@@ -21,6 +21,7 @@ model Club {
   club_leader  Int
   club_code   String  @unique
   member_count Int
+  creator     WeBandUser     @relation(fields: [club_leader], references: [user_id])
   created_at         DateTime  @default(now())
   schedules   ClubSchedule[]  
   members     ClubMember[]     
@@ -55,6 +56,7 @@ model WeBandUser {
   profile_img  String?
   user_name    String
   email        String        @unique
+  club         Club[]       
   clubMembers  ClubMember[]  
   teamCreators Team[] 
   teamMembers  TeamMember[]   
@@ -84,7 +86,7 @@ model Team {
   club_id     Int
   created_at  DateTime       @default(now())
   club        Club           @relation(fields: [club_id], references: [club_id], onDelete: Cascade)  
-  creator     WeBandUser     @relation(fields: [created_by], references: [user_id])
+  creator     WeBandUser     @relation(fields: [team_leader], references: [user_id])
   members     TeamMember[]   
   schedules   TeamSchedule[] 
   @@index([club_id])
