@@ -1,7 +1,5 @@
 import { PrismaClient } from "@prisma/client";
 import { logger } from "../utils/logger.js";
-import { prisma } from "../controllers/userScheduleControllers.js";
-import { prisma } from "./clubScheduleMiddlewares.js";
 
 const prisma = new PrismaClient();
 
