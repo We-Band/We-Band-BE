@@ -87,16 +87,13 @@ export const viewClub = async (req, res) => {
             where: {
                 club_id: Number(clubId),
             },
-            take: Number(10),  // 한 번에 가져올 수
-            skip: lastId ? 1 : 0,  // lastId가 있으면 한 개는 건너뛰기
-            cursor: lastId ? { user_id: Number(lastId) } : undefined,  // lastId가 있으면 그 이후 데이터부터 불러오기
             orderBy: {
                 created_at: 'asc',  // 회원을 ID 순서대로 정렬
             },
             select: {
-                user_id: true,
                 user: {
                     select: {
+                        user_id: true,
                         user_name: true,
                         profile_image: true,
                     },

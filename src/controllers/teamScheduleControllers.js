@@ -43,6 +43,7 @@ export const viewTeamSchedule = async (req, res) => {
             }
         });
 
+        //여기 2진 인코딩해서 보내야함 
         logger.debug("팀 주간 일정을 보냈습니다.");
         return res.json(teamSchedules);
 

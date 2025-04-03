@@ -44,6 +44,8 @@ export const viewClubSchedule = async (req, res) => {
             }
         });
 
+        //여기 2진 인코딩 
+
         logger.debug("동아리 주간 일정을 보냈습니다.");
         return res.json(clubSchedules);
 

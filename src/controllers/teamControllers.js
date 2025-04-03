@@ -93,22 +93,17 @@ export const viewTeam = async (req, res) => {
 export const viewMemberList = async (req, res) => {
     try {
         const { clubId } = req.params;
-        const { lastId } = req.query; // 쿼리 파라미터에서 lastId와 limit 가져오기
-
         const clubMembers = await prisma.clubMember.findMany({
             where: {
                 club_id: Number(clubId),
             },
-            take: Number(10),  // 한 번에 가져올 수
-            skip: lastId ? 1 : 0,  // lastId가 있으면 한 개는 건너뛰기
-            cursor: lastId ? { user_id: Number(lastId) } : undefined,  // lastId가 있으면 그 이후 데이터부터 불러오기
             orderBy: {
                 created_at: 'asc',  // 회원을 ID 순서대로 정렬
             },
             select: {
-                user_id: true,
                 user: {
                     select: {
+                        user_id: true,
                         user_name: true,
                         profile_image: true,
                     },

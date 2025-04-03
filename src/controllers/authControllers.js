@@ -150,6 +150,7 @@ export const handleKakaoUser = async (req, res) => {
 export const logout = async (req, res) => {
   try {
     if (!req.user) {
+      logger.debug("로그인 상태가 아닙니다");
       return res.status(400).json({ message: "로그인 상태가 아닙니다." });
     }
 
@@ -160,9 +161,33 @@ export const logout = async (req, res) => {
       expires: new Date(0) 
     });
     
+    logger.debug("로그아웃 되었습니다.")
     res.status(200).json({ message: "로그아웃 성공" });
   } catch (error) {
     logger.error(`로그아웃 실패:  + ${error.message}`, error);
     res.status(500).json({ message: "로그아웃 실패" });
+  }
+};
+
+export const withdraw = async (req, res) => {
+  try {
+    const userId = req.user.user_id;
+
+    if (!req.user) {
+      logger.debug("로그인 상태가 아닙니다");
+      return res.status(400).json({ message: "로그인 상태가 아닙니다." });
+    }
+
+    await prisma.weBandUser.delete({
+      where: {
+        user_id: userId
+      }
+    });
+
+    logger.info(`회원이 탈퇴 했습니다, ${userId}`);
+    res.status(200).json({ message: "회원 탈퇴 성공했습니다."});
+  } catch (error) {
+    logger.error(`회원 탈퇴 실패 :  + ${error.message}`, error);
+    res.status(500).json({ message: "회원 탈퇴 실패" });
   }
 };
