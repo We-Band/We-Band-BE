@@ -85,33 +85,16 @@ export const viewTeamSchedule = async (req, res) => {
     //base64인코딩
     const timeField = Buffer.from(packedTimeData).toString("base64");
 
-    /* 
-    //프론트에서 디코딩 방법
-    const timeDataBase64 = "여기에 서버에서 받은 timeData"; 
-
-    // Base64를 디코딩하여 바이너리 데이터로 변환
-    const buffer = Buffer.from(timeDataBase64, "base64");
-
-    // 바이너리 데이터를 210칸짜리 0/1 배열로 변환
-    const timeData = [];  
-    for (let byte of buffer) {
-      for (let i = 7; i >= 0; i--) {
-          if (timeData.length < 210) { // 210개까지만 저장
-              timeData.push((byte >> i) & 1);
-            }
-        }
-    } */
-
-    logger.debug("동아리 주간 일정을 보냈습니다.");
+    logger.debug("팀 주간 일정을 보냈습니다.");
     return res.json({
       timeData: timeField,
       events,
     });
   } catch (error) {
-    logger.error(`동아리 일정 정보 조회 중 오류 발생: ${error.message}`, error);
+    logger.error(`팀 주간 일정 조회 중 오류 발생: ${error.message}`, error);
     return res
       .status(500)
-      .json({ message: "동아리 정보 조회 중 오류가 발생했습니다." });
+      .json({ message: "팀 주간 일정 조회 중 오류가 발생했습니다." });
   }
 };
 
@@ -229,106 +212,127 @@ export const modifyTeamSchedule = async (req, res) => {
   }
 };
 
-//스택에 소괄호로 표현한 string을 보낼지, ascii문자열로 보낼지 결정해야함
-/*
 export const adjustSchedule = async (req, res) => {
-    try{
-       const { clubId, teamId } = req.params;
-       const { day } = req.query;
+  try {
+    const { clubId, teamId } = req.params;
+    const { day } = req.query;
 
-       const userIds = await prisma.teamMember.findMany({
-              where: {
-                team_id: Number(teamId),
-              },
-              select: {
-                user_id: true,
-              },
-        });
+    const userIds = await prisma.teamMember.findMany({
+      where: {
+        team_id: Number(teamId),
+      },
+      select: {
+        user_id: true,
+      },
+    });
 
-        const userIdsArray = userIds.map(user => user.user_id);
+    const userIdsArray = userIds.map((user) => user.user_id);
 
-        // 주의 시작(월요일 00:00:00)과 끝(일요일 23:59:59) 계산
-        const startDate = new Date(day);
-        startDate.setDate(inputDate.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1));
-        startDate.setHours(0, 0, 0, 0);
+    const inputDate = new Date(day);
+    const dayOfWeek = inputDate.getDay();
+    const startDate = new Date(inputDate);
+    startDate.setDate(
+      inputDate.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1)
+    );
+    startDate.setHours(0, 0, 0, 0);
 
-        const endDate = new Date(startDate);
-        endDate.setDate(startDate.getDate() + 6);
-        endDate.setHours(23, 59, 59, 999);
+    const endDate = new Date(startDate);
+    endDate.setDate(startDate.getDate() + 6);
+    endDate.setHours(23, 59, 59, 999);
 
-        // 7일(월~일) * 32칸(30분 단위) 초기화
-        let availabilityMatrix = Array.from({ length: 7 }, () => Array(32).fill(0));
+    let timeData = Array(210).fill(0);
+    let events = [];
 
-        const userSchedules = await prisma.userSchedule.findMany({
-            where: {
-                user_id: { in: userIdsArray },
-                user_schedule_start: { gte: startDate, lte: endDate }
-            },
-            select: {
-                user_id: true,
-                user_schedule_start: true,
-                user_schedule_end: true,
-            },
-            orderBy: { 
-                user_schedule_start: "asc" 
-            }
-        });
+    const userSchedules = await prisma.userSchedule.findMany({
+      where: {
+        user_id: { in: userIdsArray },
+        user_schedule_start: { gte: startDate, lte: endDate },
+      },
+      select: {
+        user_id: true,
+        user_schedule_start: true,
+        user_schedule_end: true,
+      },
+      orderBy: {
+        user_schedule_start: "asc",
+      },
+    });
 
-        //타임라인 스위핑
-        for (const schedule of userSchedules) {
-            const dayIndex = Math.floor((schedule.user_schedule_start - startDate) / (1000 * 60 * 60 * 24)); // 0~6 (월~일)
-            const startSlot = Math.floor(schedule.user_schedule_start.getHours() * 2 + schedule.user_schedule_start.getMinutes() / 30);
-            const endSlot = Math.floor(schedule.user_schedule_end.getHours() * 2 + schedule.user_schedule_end.getMinutes() / 30);
+    for (let schedule of userSchedules) {
+      const { user_id, user_schedule_start, user_schedule_end } = schedule;
 
-            for (let i = startSlot; i < endSlot; i++) {
-                availabilityMatrix[dayIndex][i]++;  // 해당 시간대에 +1
-            }
+      const startIdx = Math.floor(
+        (new Date(user_schedule_start) - startDate) / (30 * 60 * 1000)
+      );
+      const length = Math.floor(
+        (new Date(user_schedule_end) - new Date(user_schedule_start)) /
+          (30 * 60 * 1000)
+      );
+
+      for (let i = startIdx; i < startIdx + length; i++) {
+        if (i >= 0 && i < 210) {
+          timeData[i]++;
         }
+      }
 
-        function encodeRLE(arr) {
-            let result = [];
-            let prev = arr[0], count = 1;
-            for (let i = 1; i < arr.length; i++) {
-                if (arr[i] === prev && count < 15) count++;
-                else {
-                    result.push((prev << 4) | count);
-                    prev = arr[i];
-                    count = 1;
-                }
-            }
-            result.push((prev << 4) | count);
-            return result;
+      // 2명 이상 가능한 경우만 events에 넣는다
+      const existing = events.find((e) => e[1] === length && e[2] === startIdx);
+      if (existing) {
+        existing[0].push(user_id);
+        if (existing[0].length < 2) {
+          const idx = events.indexOf(existing);
+          events.splice(idx, 1);
         }
-
-        function convertToAscii(byteArray) {
-            return byteArray.map(byte => String.fromCharCode(byte)).join("");
-        }
-    
-        function rleToStackString(rleData) {
-            return rleData
-                .map(byte => {
-                    let value = byte >> 4;
-                    let count = byte & 0x0F;
-                    if (value === 0) return ".".repeat(count);
-                    return "(".repeat(value) + " ".repeat(count) + ")".repeat(value);
-                })
-                .join("");
-        }
-    
-        let compressedData = [];
-        let encodedStrings = [];
-    
-        for (let i = 0; i < 7; i++) {
-            let rleEncoded = encodeRLE(availabilityMatrix[i]);
-            compressedData.push(rleEncoded);
-            encodedStrings.push(rleToStackString(rleEncoded));
-        }
-    
-        return { weekStart: startDate, availability: encodedStrings };
-
-    } catch (error) {
-        logger.error('팀 일정 조정 중 오류 발생:', error);
-        return res.status(500).json({ message: "팀 일정 조정 중 오류 발생" });
+      } else {
+        events.push([[user_id], length, startIdx]);
+      }
     }
+
+    const packedTimeData = [];
+    for (let i = 0; i < timeData.length; i += 8) {
+      let byte = 0;
+      for (let j = 0; j < 8; j++) {
+        // 2명 이상 가능한 경우에만 1로 인코딩
+        if (i + j < timeData.length && timeData[i + j] >= 2) {
+          byte |= 1 << (7 - j);
+        }
+      }
+      packedTimeData.push(byte);
+    }
+    const timeField = Buffer.from(packedTimeData).toString("base64");
+
+    const eventString = events
+      .map(([users, len, start]) => `${users.join(",")}|${len}|${start}`)
+      .join(";");
+    const encodedEvents = Buffer.from(eventString).toString("base64");
+
+    logger.debug("팀 일정 조정 데이터를 전송했습니다.");
+    return res.json({
+      timeData: timeField,
+      events: encodedEvents,
+    });
+  } catch (error) {
+    logger.error("팀 일정 조정 중 오류 발생:", error);
+    return res.status(500).json({ message: "팀 일정 조정 중 오류 발생" });
+  }
+};
+
+/*timeField 클라이언트 디코딩
+ const timeData = [];  
+    for (let byte of buffer) {
+      for (let i = 7; i >= 0; i--) {
+          if (timeData.length < 210) { // 210개까지만 저장
+              timeData.push((byte >> i) & 1);
+            }
+        }
+    }
+*/
+/*encodedEvents 클라이언트 디코딩
+const decodeEvent = (encoded) => {
+  const decoded = atob(encoded);
+  return decoded.split(";").map((item) => {
+    const [usersStr, lenStr, startStr] = item.split("|");
+    return [usersStr.split(",").map(Number), Number(lenStr), Number(startStr)];
+  });
 };
 */
