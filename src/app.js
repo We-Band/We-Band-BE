@@ -10,7 +10,7 @@ import clubRoutes from "./routes/clubRoutes.js";
 import clubScheduleRoutes from "./routes/clubScheduleRoutes.js";
 import userScheduleRoutes from "./routes/userScheduleRoutes.js";
 import teamRoutes from "./routes/teamRoutes.js";
-import teamScheduleRoutes from "./routes/teamScheduleRoutes.js"
+import teamScheduleRoutes from "./routes/teamScheduleRoutes.js";
 
 dotenv.config();
 
@@ -18,11 +18,11 @@ const app = express();
 
 const corsOptions = {
   origin: [
-    'http://localhost:5173', // 프론트엔드 로컬 환경
+    "http://localhost:5173", // 프론트엔드 로컬 환경
   ],
   credentials: true, // 쿠키 및 인증 헤더 허용
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-access-token'],
-  exposedHeaders: ['x-access-token', 'Content-Encoding'],
+  allowedHeaders: ["Content-Type", "Authorization", "x-access-token"],
+  exposedHeaders: ["x-access-token", "Content-Encoding"],
 };
 
 // Express 애플리케이션 설정
@@ -35,13 +35,13 @@ app.use(cookieParser());
 app.use(
   compression({
     level: 6,
-    threshold: 100 * 1000, //100KB 이상인 경우에만 압축
+    threshold: 10 * 1024, //100KB 이상인 경우에만 압축
     filter: (req, res) => {
       if (req.headers["x-no-compression"]) {
         // header에 x-no-compression이 있으면, 압축하지 않도록 false를 반환한다.
         return false;
       }
-      return compression.filter(req, res); 
+      return compression.filter(req, res);
     },
   })
 );
