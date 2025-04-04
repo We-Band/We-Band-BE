@@ -1,25 +1,42 @@
-import { S3Client, HeadBucketCommand } from '@aws-sdk/client-s3';
-import { logger } from "../utils/logger.js";  
+import { S3Client, HeadBucketCommand } from "@aws-sdk/client-s3";
+import { logger } from "../utils/logger.js";
 
-// S3 클라이언트 설정
+// R2 클라이언트 설정
 export const s3Client = new S3Client({
-  region: process.env.AWS_REGION, // S3 버킷의 리전
+  region: "auto", // Cloudflare는 'auto'로 고정
+  endpoint: `https://${process.env.CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com`,
   credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID, // AWS 액세스 키 ID
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY, // AWS 비밀 액세스 키
+    accessKeyId: process.env.CLOUDFLARE_ACCESS_KEY_ID,
+    secretAccessKey: process.env.CLOUDFLARE_SECRET_ACCESS_KEY,
   },
+  forcePathStyle: false, // R2는 virtual-hosted-style 사용 (이게 기본)
 });
 
-// S3 연결 확인
+// R2 연결 확인
 export const checkS3Connection = async () => {
-  const bucketName = process.env.AWS_S3_BUCKET_NAME;
-  
-  try {
-    const command = new HeadBucketCommand({ Bucket: bucketName });
-    await s3Client.send(command);
+  const bucketName = process.env.R2_BUCKET_NAME;
+  const testKey = `connection-test-${Date.now()}`;
 
-    logger.info(`S3 버킷 "${bucketName}" 연결 성공`);
+  try {
+    // dummy 파일 업로드
+    await s3Client.send(
+      new PutObjectCommand({
+        Bucket: bucketName,
+        Key: testKey,
+        Body: "R2 Connection Test",
+      })
+    );
+
+    // dummy 파일 삭제
+    await s3Client.send(
+      new DeleteObjectCommand({
+        Bucket: bucketName,
+        Key: testKey,
+      })
+    );
+
+    logger.info(`R2 연결 성공 (버킷: ${bucketName})`);
   } catch (error) {
-    logger.error(`S3 버킷 "${bucketName}" 연결 실패:`, error.message);
+    logger.error(`R2 연결 실패: ${error.message}`);
   }
 };
