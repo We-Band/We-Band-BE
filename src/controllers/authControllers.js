@@ -99,29 +99,15 @@ export const handleKakaoUser = async (req, res) => {
 
     const { id: kakaoId, kakao_account, properties } = userInfo; // 카카오 사용자 ID 및 계정 정보
     const email = kakao_account.email;
-<<<<<<< HEAD
     const userName = properties.nickname || email.split('@')[0];
     const profile_img = properties.profile_image || null;
  
     
-=======
-
->>>>>>> baae97d0264cf61f47324b4bb29848ea067437f8
     // 데이터베이스에서 사용자 확인 또는 새 사용자 생성
     let user = await prisma.weBandUser.findUnique({ where: { email } });
 
     if (!user) {
-<<<<<<< HEAD
       // 새 사용자 생성 
-=======
-      // 기본 닉네임 생성 (이메일의 @ 앞 부분 사용)
-      const userName = email.split("@")[0];
-
-      // 카카오톡 프로필 이미지 사용
-      const profile_img = properties.profile_image;
-
-      // 새 사용자 생성
->>>>>>> baae97d0264cf61f47324b4bb29848ea067437f8
       user = await prisma.weBandUser.create({
         data: {
           kakao_id: BigInt(kakaoId),
