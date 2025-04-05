@@ -3,67 +3,101 @@ import { logger } from "../utils/logger.js";
 
 const prisma = new PrismaClient();
 
-//팀장 or 회장 여부 확인
-
-export const isTeamLeader = async (req, res, next) => {
+export const verifyTeam = async (req, res, next) => {
   try {
-    const userId = req.user.user_id;
-    const teamId = req.params.teamId;
-    const clubId = req.params.clubId;
+      const { clubId, teamId } = req.params;
+      
+      const team  = await prisma.team.findFirst({
+        where: { 
+          club_id: Number(clubId),
+          team_id: Number(teamId),
+         },
+      });
 
-    const TeamLeader = await prisma.Team.findFirst({
-      where: {
-        team_id: Number(teamId),
-        created_by: Number(userId),
-      },
-    });
-
-    const ClubLeader = await prisma.Club.findFirst({
-      where: {
-        club_id: Number(clubId),
-        club_leader: Number(userId),
-      },
-    });
-
-    if (!TeamLeader && !ClubLeader) {
-      logger.info("해당 팀의 팀장이 아닙니다!");
-      return res
-        .status(409)
-        .json({ message: "팀장만이 사용할 수 있는 기능입니다." });
+      if (!team) {
+        logger.debug(`존재하지 않는 팀 입니다 ${teamId}`)
+        return res.status(404).json({ message: "존재하지 않는 팀입니다." });
     }
 
-    logger.info("팀장 검증 완료");
+    req.team = team;
+
+    logger.debug("팀 존재 여부 검증 완료");
     next();
-  } catch (error) {
-    logger.error(`팀장 검증 실패${error.message}`, { error });
-    return res.status(500).json({ message: "서버 오류 발생" });
+  } catch(error) {
+    logger.error(`팀 여부 검증 실패${error.message}`, { error } );
+    return res.status(500).json({ message: "팀 존재 여부 검증 중 오류가 발생했습니다." });
   }
 };
 
-// 팀 소속 여부 확인
-export const isTeamMember = async (req, res, next) => {
-  try {
-    const userId = req.user.user_id;
-    const teamId = req.params.teamId;
+export const isTeamLeader = async (req, res, next) => {
+    try {
+        const { clubId, teamId } = req.params;
+        const userId = req.user.user_id;
+		const teamLeader = req.team.team_leader;
 
-    const TeamMember = await prisma.TeamMember.findFirst({
-      where: {
-        team_id: Number(teamId),
-        user_id: Number(userId),
-      },
-    });
-
-    if (!TeamMember) {
-      logger.info("해당 팀의 팀원이 아닙니다!");
-      return res
-        .status(409)
-        .json({ message: "팀원만이 사용할 수 있는 기능입니다." });
-    }
-
-    logger.info("팀원 검증 완료");
-    next();
+        if (teamLeader !== userId) {
+        logger.debug("해당팀의 팀장이 아닙니다", { clubId },{ teamId }, { userId });
+        return res.status(401).json({ message: "해당 기능에 접근할 권한이 없습니다." });
+      	}
+      
+        logger.debug("팀장 검증 완료", { clubId }, { userId });
+    	next();
   } catch (error) {
-    logger.error(`팀원 검증 실패${error.message}`, { error });
-    return res.status(500).json({ message: "서버 오류 발생" });
+      logger.error(`회장 검증 과정 중 실패: ${error.message}`, { error });
+      return res.status(500).json({ message: "서버 오류 발생" });
   }
+};
+
+export const isMyTeam = async (req, res, next) => {
+    try {
+        const { clubId, teamId } = req.params;
+        const userId = req.user.user_id;
+        
+        //clubMember 테이블에서 동아리 가입여부 검증
+        const teamMember = await prisma.teamMember.findFirst({
+            where: {
+                team_id: Number(teamId),
+                user_id: Number(userId),
+            },
+        });
+
+        if (!teamMember) {
+            logger.debug("팀에 가입되지 않은 사용자 입니다.");
+            return res.status(409).json({ message: "동아리에 가입되지 않은 사용자입니다."})
+        }
+
+        req.teamMember = teamMember;
+
+        logger.debug("팀 가입 여부 검증 완료");
+        next();
+    } catch(error) {
+        logger.error(`동아리 가입 여부 검증 실패${error.message}`, { error } );
+        return res.status(500).json({ message: "서버 오류 발생" });
+    }
+};
+
+export const isUserJoinedTeam = async (req, res, next) => {
+	try {
+		const { clubId, teamId } = req.params;
+		const { userId } = req.body;
+		
+		//clubMember 테이블에서 동아리 가입여부 검증
+		const teamMember = await prisma.teamMember.findFirst({
+			where: {
+				team_id: Number(teamId),
+				user_id: Number(userId),
+			},
+		});
+
+		if (!teamMember) {
+			logger.debug("팀에 가입하지 않은 사용자 입니다.");
+			return res.status(409).json({ message: "팀에 가입되지 않은 사용자입니다."})
+		}
+
+		logger.debug("가입 여부 검증 완료");
+		next();
+	} catch(error) {
+		logger.error(`팀 가입 여부 검증 실패${error.message}`, { error } );
+		return res.status(500).json({ message: "서버 오류 발생" });
+	}
 };
