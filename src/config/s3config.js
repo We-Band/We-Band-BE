@@ -1,13 +1,14 @@
 import { S3Client, HeadBucketCommand } from "@aws-sdk/client-s3";
 import { logger } from "../utils/logger.js";
+import { PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 
 // R2 클라이언트 설정
 export const s3Client = new S3Client({
   region: "auto", // Cloudflare는 'auto'로 고정
   endpoint: `https://${process.env.CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com`,
   credentials: {
-    accessKeyId: process.env.CLOUDFLARE_ACCESS_KEY_ID,
-    secretAccessKey: process.env.CLOUDFLARE_SECRET_ACCESS_KEY,
+    accessKeyId: process.env.R2_ACCESS_KEY_ID,
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
   },
   forcePathStyle: false, // R2는 virtual-hosted-style 사용 (이게 기본)
 });

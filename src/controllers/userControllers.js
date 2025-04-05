@@ -1,8 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { logger } from "../utils/logger.js";
 import { s3Client } from "../config/s3config.js";
-import { PutObjectCommand } from "@aws-sdk/client-s3";
-import { DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 
 const prisma = new PrismaClient();
 
