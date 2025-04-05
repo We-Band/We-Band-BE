@@ -11,7 +11,6 @@ export const viewUserSchedule = async (req, res) => {
   try {
     const { userId } = req.params;
     const { day } = req.query;
-    const myId = req.user.user_id;
 
     //날짜를 주 단위로 요청
     const inputDate = new Date(day);
@@ -65,11 +64,10 @@ export const viewUserSchedule = async (req, res) => {
       }
 
       const startIdx = Math.floor(
-        (user_schedule_start.getTime() - startDate.getTime()) / (30 * 60 * 1000)
+        (user_schedule_start - startDate) / (30 * 60 * 1000)
       ); // 30분 단위 인덱스
       const length = Math.floor(
-        (user_schedule_end.getTime() - user_schedule_start.getTime()) /
-          (30 * 60 * 1000)
+        (user_schedule_end - user_schedule_start) / (30 * 60 * 1000)
       );
 
       //해당 시간대에 일정이 있으면 1로 표시

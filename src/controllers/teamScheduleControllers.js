@@ -130,7 +130,7 @@ export const viewDetailTeamSchedule = async (req, res) => {
   }
 };
 
-//일정 추가 (POST /clubs/:clubId/clubSchdule)
+//동아리 일정 추가 (POST /clubs/:clubId/clubSchdule)
 export const addTeamSchedule = async (req, res) => {
   try {
     const { clubId, teamId } = req.params;
@@ -142,37 +142,20 @@ export const addTeamSchedule = async (req, res) => {
       teamParticipants,
     } = req.body;
 
-    const userIds = teamParticipants.split(",").map(Number);
-
-    //팀일정  팀, 사용자 데이터베이스에 추가
-    await prisma.$transaction(async (tx) => {
-      await tx.teamSchedule.create({
-        data: {
-          team_id: Number(clubId),
-          team_schedule_start: new Date(teamScheduleStart),
-          team_schedule_end: new Date(teamScheduleEnd),
-          team_schedule_title: teamScheduleTitle,
-          team_schedule_place: teamSchedulePlace || "",
-          team_participants: teamParticipants,
-        },
-      });
-
-      const userScheduleData = userIds.map((userId) => ({
-        user_id: userId,
-        user_schedule_start: new Date(teamScheduleStart),
-        user_schedule_end: new Date(teamScheduleEnd),
-        user_schedule_title: teamScheduleTitle,
-        user_schedule_place: teamSchedulePlace || "",
-        user_schedule_participants: teamParticipants,
-        is_public: true,
-      }));
-
-      await tx.userSchedule.createMany({ data: userScheduleData });
+    //동아리 일정 데이터베이스에 추가
+    const newTeamSchedule = await prisma.teamSchedule.create({
+      data: {
+        team_id: Number(clubId),
+        team_schedule_start: new Date(teamScheduleStart),
+        team_schedule_end: new Date(teamScheduleEnd),
+        team_schedule_title: teamScheduleTitle,
+        team_schedule_place: teamSchedulePlace || "",
+        team_participants: teamParticipants || "",
+      },
     });
 
-    logger.debug("팀 일정이 사용자에게 추가되었습니다.");
-
-    return res.status(201).json({ message: "팀 일정이 추가되었습니다." });
+    logger.debug("팀 일정이 추가 됐습니다.");
+    return res.status(201).json(newTeamSchedule);
   } catch (error) {
     logger.error("팀 일정 추가 중 오류 발생:", error);
     return res.status(500).json({ message: "팀 일정 추가 중 오류 발생" });
@@ -242,6 +225,7 @@ export const adjustSchedule = async (req, res) => {
         user_id: true,
       },
     });
+
     const userIdsArray = userIds.map((user) => user.user_id);
 
     const inputDate = new Date(day);
@@ -256,10 +240,8 @@ export const adjustSchedule = async (req, res) => {
     endDate.setDate(startDate.getDate() + 6);
     endDate.setHours(23, 59, 59, 999);
 
-    const timeData = Array(210).fill(0);
-    const timeSlotUsers = Array(210)
-      .fill(null)
-      .map(() => new Set());
+    let timeData = Array(210).fill(0);
+    let events = [];
 
     const userSchedules = await prisma.userSchedule.findMany({
       where: {
@@ -276,25 +258,9 @@ export const adjustSchedule = async (req, res) => {
       },
     });
 
-    const userNames = await prisma.user.findMany({
-      where: {
-        user_id: { in: userIdsArray },
-      },
-      select: {
-        user_id: true,
-        user_name: true,
-      },
-    });
+    for (let schedule of userSchedules) {
+      const { user_id, user_schedule_start, user_schedule_end } = schedule;
 
-    const userNameMap = Object.fromEntries(
-      userNames.map((user) => [user.user_id, user.user_name])
-    );
-
-    for (const {
-      user_id,
-      user_schedule_start,
-      user_schedule_end,
-    } of userSchedules) {
       const startIdx = Math.floor(
         (new Date(user_schedule_start) - startDate) / (30 * 60 * 1000)
       );
@@ -305,59 +271,43 @@ export const adjustSchedule = async (req, res) => {
 
       for (let i = startIdx; i < startIdx + length; i++) {
         if (i >= 0 && i < 210) {
-          timeSlotUsers[i].add(user_id);
+          timeData[i]++;
         }
       }
-    }
 
-    // 최소 2명 이상 가능한 시간대만 1로 표시
-    for (let i = 0; i < 210; i++) {
-      if (timeSlotUsers[i].size >= 2) {
-        timeData[i] = 1;
+      // 2명 이상 가능한 경우만 events에 넣는다
+      const existing = events.find((e) => e[1] === length && e[2] === startIdx);
+      if (existing) {
+        existing[0].push(user_id);
+        if (existing[0].length < 2) {
+          const idx = events.indexOf(existing);
+          events.splice(idx, 1);
+        }
+      } else {
+        events.push([[user_id], length, startIdx]);
       }
     }
 
-    // 30분 단위 timeData를 8bit씩 묶어서 packed
     const packedTimeData = [];
     for (let i = 0; i < timeData.length; i += 8) {
       let byte = 0;
       for (let j = 0; j < 8; j++) {
-        if (i + j < timeData.length) {
-          byte |= timeData[i + j] << (7 - j);
+        // 2명 이상 가능한 경우에만 1로 인코딩
+        if (i + j < timeData.length && timeData[i + j] >= 2) {
+          byte |= 1 << (7 - j);
         }
       }
       packedTimeData.push(byte);
     }
     const timeField = Buffer.from(packedTimeData).toString("base64");
 
-    // events: 가능한 연속 시간 구간 추출
-    const events = [];
-    let i = 0;
-    while (i < 210) {
-      if (timeData[i] === 1) {
-        const start = i;
-        let users = new Set([...timeSlotUsers[i]]);
-        while (i < 210 && timeData[i] === 1) {
-          users = new Set([...users].filter((u) => timeSlotUsers[i].has(u)));
-          i++;
-        }
-        const len = i - start;
-        if (users.size >= 2) {
-          events.push([Array.from(users), users.size, start, len]);
-        }
-      } else {
-        i++;
-      }
-    }
-
     const eventString = events
-      .map(([users, count, start]) => `${users.join(",")}|${count}|${start}`)
+      .map(([users, len, start]) => `${users.join(",")}|${len}|${start}`)
       .join(";");
     const encodedEvents = Buffer.from(eventString).toString("base64");
 
     logger.debug("팀 일정 조정 데이터를 전송했습니다.");
     return res.json({
-      userNameMap,
       timeData: timeField,
       events: encodedEvents,
     });
