@@ -17,77 +17,37 @@ datasource db {
 model Club {
   club_id     Int             @id @default(autoincrement())
   club_name   String
+  club_img  String?
   club_leader  Int
   club_code   String  @unique
   member_count Int
+  creator     WeBandUser     @relation(fields: [club_leader], references: [user_id])
   created_at         DateTime  @default(now())
-  schedules   ClubSchedule[]
-  members     ClubMember[]
-  teams       Team[]
+  schedules   ClubSchedule[]  
+  members     ClubMember[]     
+  teams       Team[]         
 }
 
 model ClubSchedule {
   club_schedule_id   Int       @id @default(autoincrement())
   club_id            Int
-  club_schedule_time DateTime
+  club_schedule_start DateTime
+  club_schedule_end  DateTime
   club_schedule_title String?
   club_schedule_place String?
   created_at         DateTime  @default(now())
-  club               Club      @relation(fields: [club_id], references: [club_id])
+  club               Club      @relation(fields: [club_id], references: [club_id], onDelete: Cascade) 
+  @@index([club_id, club_schedule_start])
 }
 
 model ClubMember {
   club_id Int
   user_id Int
-  club    Club    @relation(fields: [club_id], references: [club_id])
-  user    WeBandUser @relation(fields: [user_id], references: [user_id])
+  created_at         DateTime  @default(now())
+  club    Club    @relation(fields: [club_id], references: [club_id], onDelete: Cascade)
+  user    WeBandUser @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
 
   @@id([club_id, user_id])
-}
-
-model UserSchedule {
-  user_schedule_id        Int       @id @default(autoincrement())
-  user_schedule_title     String
-  user_schedule_time      DateTime
-  user_schedule_place     String?
-  is_public           Boolean   @default(true)
-  user_id            Int
-  created_at         DateTime  @default(now())
-  user               WeBandUser @relation(fields: [user_id], references: [user_id])
-}
-
-model Team {
-  team_id     Int            @id @default(autoincrement())
-  created_by  Int
-  team_name   String
-  club_id     Int
-  created_at  DateTime       @default(now())
-  club        Club           @relation(fields: [club_id], references: [club_id])
-  creator     WeBandUser     @relation(fields: [created_by], references: [user_id])
-  members     TeamMember[]
-  schedules   TeamSchedule[]
-}
-
-model TeamMember {
-  team_id Int
-  user_id Int
-  team    Team    @relation(fields: [team_id], references: [team_id], onDelete: Cascade)
-  user    WeBandUser @relation(fields: [user_id], references: [user_id])
-
-  @@id([team_id, user_id])
-}
-
-model TeamSchedule {
-  team_schedule_id   Int       @id @default(autoincrement())
-  team_schedule_title String
-  team_schedule_time DateTime
-  schedule_place     String?
-  schedule_participated String?
-  team_id            Int
-  created_by         Int
-  created_at         DateTime  @default(now())
-  team               Team      @relation(fields: [team_id], references: [team_id])
-  creator            WeBandUser @relation(fields: [created_by], references: [user_id])
 }
 
 model WeBandUser {
@@ -96,9 +56,65 @@ model WeBandUser {
   profile_img  String?
   user_name    String
   email        String        @unique
-  clubMembers  ClubMember[]
-  teamCreators Team[]
-  teamMembers  TeamMember[]
-  schedules    UserSchedule[]
-  teamSchedules TeamSchedule[]
+  club         Club[]       
+  clubMembers  ClubMember[]  
+  teamCreators Team[] 
+  teamMembers  TeamMember[]   
+  schedules    UserSchedule[]   
+  teamSchedules TeamSchedule[]   
 }
+
+model UserSchedule {
+  user_schedule_id        Int       @id @default(autoincrement())
+  user_schedule_title     String
+  user_schedule_start     DateTime
+  user_schedule_end       DateTime
+  user_schedule_place     String?
+  user_schedule_participants String?
+  is_public           Boolean   @default(true)
+  user_id            Int
+  created_at         DateTime  @default(now())
+  user               WeBandUser @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  @@index([user_id, user_schedule_start])
+}
+
+model Team {
+  team_id     Int            @id @default(autoincrement())
+  team_leader  Int
+  team_name   String
+  team_img  String?
+  club_id     Int
+  created_at  DateTime       @default(now())
+  club        Club           @relation(fields: [club_id], references: [club_id], onDelete: Cascade)  
+  creator     WeBandUser     @relation(fields: [team_leader], references: [user_id])
+  members     TeamMember[]   
+  schedules   TeamSchedule[] 
+  @@index([club_id])
+}
+
+model TeamMember {
+  team_id Int
+  user_id Int
+  created_at         DateTime  @default(now())
+  team    Team    @relation(fields: [team_id], references: [team_id], onDelete: Cascade)  
+  user    WeBandUser @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@id([team_id, user_id])
+}
+
+model TeamSchedule {
+  team_schedule_id   Int       @id @default(autoincrement())
+  team_schedule_title String
+  team_schedule_start DateTime
+  team_schedule_end   DateTime
+  team_schedule_place     String?
+  team_schedule_participants String?
+  team_id            Int
+  created_by         Int
+  created_at         DateTime  @default(now())
+  team               Team      @relation(fields: [team_id], references: [team_id], onDelete: Cascade)
+  creator            WeBandUser @relation(fields: [created_by], references: [user_id])
+  @@index([team_id, team_schedule_start])
+}
+
+
