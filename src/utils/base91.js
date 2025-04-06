@@ -1,6 +1,7 @@
 const base91chars =
   'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!#$%&()*+,./:;<=>?@[]^_`{|}~"';
 
+/* base91 인코딩*/
 export const encodeBase91 = (inputBuffer) => {
   let b = 0,
     n = 0,

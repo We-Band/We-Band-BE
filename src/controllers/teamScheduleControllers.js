@@ -1,10 +1,12 @@
 import express from "express";
 import { logger } from "../utils/logger.js";
 import { PrismaClient } from "@prisma/client";
+import { encodeBase91 } from "../utils/base91.js";
 const router = express.Router();
 
 const prisma = new PrismaClient();
 
+// (GET /clubs/:clubId/teams/:teamId/team-schedules?day=2025-03-10)
 export const viewTeamSchedule = async (req, res) => {
   try {
     const { clubId, teamId } = req.params;
@@ -70,7 +72,7 @@ export const viewTeamSchedule = async (req, res) => {
       events.push([startIdx, length, team_schedule_id, team_schedule_title]);
     }
 
-    //0과 1 -> 1바이트로 변환
+    // 8비트 단위로 바이트 배열 생성
     const packedTimeData = [];
     for (let i = 0; i < timeData.length; i += 8) {
       let byte = 0;
@@ -82,8 +84,8 @@ export const viewTeamSchedule = async (req, res) => {
       packedTimeData.push(byte);
     }
 
-    //base64인코딩
-    const timeField = Buffer.from(packedTimeData).toString("base64");
+    // base91로 인코딩
+    const timeField = encodeBase91(new Uint8Array(packedTimeData));
 
     logger.debug("팀 주간 일정을 보냈습니다.");
     return res.json({
@@ -98,6 +100,7 @@ export const viewTeamSchedule = async (req, res) => {
   }
 };
 
+//팀 일정 상세 조회 (GET /clubs/:clubId/teams/:teamId/team-schedules/:teamScheduleId)
 export const viewDetailTeamSchedule = async (req, res) => {
   try {
     const { clubId, teamId, teamScheduleId } = req.params;
@@ -130,7 +133,7 @@ export const viewDetailTeamSchedule = async (req, res) => {
   }
 };
 
-//일정 추가 (POST /clubs/:clubId/clubSchdule)
+//동아리 일정 추가 API (POST /clubs/:clubId/teams/:teamId/team-schedules)
 export const addTeamSchedule = async (req, res) => {
   try {
     const { clubId, teamId } = req.params;
@@ -144,7 +147,7 @@ export const addTeamSchedule = async (req, res) => {
 
     const userIds = teamParticipants.split(",").map(Number);
 
-    //팀일정  팀, 사용자 데이터베이스에 추가
+    //팀일정 사용자 데이터베이스에 추가
     await prisma.$transaction(async (tx) => {
       await tx.teamSchedule.create({
         data: {
@@ -179,7 +182,7 @@ export const addTeamSchedule = async (req, res) => {
   }
 };
 
-//동아리 일정 삭제 API (DELETE /clubs/:clubId/clubSchdule/:clubScheduleId)
+//팀 일정 삭제 API (DELETE /clubs/:clubId/teams/:teamId/team-schedules/:teamScheduleId)
 export const deleteTeamSchedule = async (req, res) => {
   try {
     const { clubId, teamId, teamScheduleId } = req.params;
@@ -197,7 +200,7 @@ export const deleteTeamSchedule = async (req, res) => {
   }
 };
 
-//동아리 일정 수정 API (PATCH /clubs/:clubId/clubSchedule/:clubScheduld)
+//팀 일정 수정 API (PATCH /clubs/:clubId/teams/:teamId/team-schedules/:teamScheduleId)
 export const modifyTeamSchedule = async (req, res) => {
   try {
     const { clubId, teamId } = req.params;
@@ -229,6 +232,7 @@ export const modifyTeamSchedule = async (req, res) => {
   }
 };
 
+//팀 일정 조율 API (GET /clubs/:clubId/teams/:teamId/team-schedules/adjust?day=2025-03-10)
 export const adjustSchedule = async (req, res) => {
   try {
     const { clubId, teamId } = req.params;
@@ -242,8 +246,11 @@ export const adjustSchedule = async (req, res) => {
         user_id: true,
       },
     });
+
+    // 팀 맴버 user_id 배열로 변환
     const userIdsArray = userIds.map((user) => user.user_id);
 
+    // 날짜 범위
     const inputDate = new Date(day);
     const dayOfWeek = inputDate.getDay();
     const startDate = new Date(inputDate);
@@ -261,6 +268,7 @@ export const adjustSchedule = async (req, res) => {
       .fill(null)
       .map(() => new Set());
 
+    //사용자 일정 조회
     const userSchedules = await prisma.userSchedule.findMany({
       where: {
         user_id: { in: userIdsArray },
@@ -276,6 +284,8 @@ export const adjustSchedule = async (req, res) => {
       },
     });
 
+    //사용자 이름 조회를 위한 key-value json map
+    // user_id를 키로, user_name을 값으로 하는 객체 생성
     const userNames = await prisma.user.findMany({
       where: {
         user_id: { in: userIdsArray },
@@ -290,6 +300,7 @@ export const adjustSchedule = async (req, res) => {
       userNames.map((user) => [user.user_id, user.user_name])
     );
 
+    // 일정 겹치는지 조회
     for (const {
       user_id,
       user_schedule_start,
@@ -317,7 +328,7 @@ export const adjustSchedule = async (req, res) => {
       }
     }
 
-    // 30분 단위 timeData를 8bit씩 묶어서 packed
+    // 8비트 단위로 바이트 배열 생성
     const packedTimeData = [];
     for (let i = 0; i < timeData.length; i += 8) {
       let byte = 0;
@@ -328,7 +339,9 @@ export const adjustSchedule = async (req, res) => {
       }
       packedTimeData.push(byte);
     }
-    const timeField = Buffer.from(packedTimeData).toString("base64");
+
+    // base91로 인코딩
+    const timeField = encodeBase91(new Uint8Array(packedTimeData));
 
     // events: 가능한 연속 시간 구간 추출
     const events = [];
@@ -368,14 +381,54 @@ export const adjustSchedule = async (req, res) => {
 };
 
 /*timeField 클라이언트 디코딩
- const timeData = [];  
-    for (let byte of buffer) {
-      for (let i = 7; i >= 0; i--) {
-          if (timeData.length < 210) { // 210개까지만 저장
-              timeData.push((byte >> i) & 1);
-            }
-        }
+ const base91chars =
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!#$%&()*+,./:;<=>?@[]^_`{|}~\"";
+
+const base91DecodeTable = (() => {
+  const table = {};
+  for (let i = 0; i < base91chars.length; i++) {
+    table[base91chars[i]] = i;
+  }
+  return table;
+})();
+
+export function decodeBase91(encoded) {
+  let v = -1, b = 0, n = 0;
+  const output = [];
+
+  for (let i = 0; i < encoded.length; i++) {
+    const c = encoded[i];
+    if (!(c in base91DecodeTable)) continue;
+
+    if (v < 0) {
+      v = base91DecodeTable[c];
+    } else {
+      v += base91DecodeTable[c] * 91;
+      b |= v << n;
+      n += (v & 8191) > 88 ? 13 : 14;
+
+      while (n >= 8) {
+        output.push(b & 255);
+        b >>= 8;
+        n -= 8;
+      }
+
+      v = -1;
     }
+  }
+
+  if (v >= 0) {
+    b |= v << n;
+    n += 7;
+    while (n >= 8) {
+      output.push(b & 255);
+      b >>= 8;
+      n -= 8;
+    }
+  }
+
+  return output;
+}
 */
 /*encodedEvents 클라이언트 디코딩
 const decodeEvent = (encoded) => {

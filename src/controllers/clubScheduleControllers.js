@@ -1,6 +1,7 @@
 import express from "express";
 import { logger } from "../utils/logger.js";
 import { PrismaClient } from "@prisma/client";
+import { encodeBase91 } from "../utils/base91.js";
 const router = express.Router();
 
 const prisma = new PrismaClient();
@@ -47,6 +48,7 @@ export const viewClubSchedule = async (req, res) => {
     let timeData = Array(210).fill(0);
     let events = [];
 
+    //events 배열 정보 추가
     for (let schedule of clubSchedules) {
       const {
         club_schedule_id,
@@ -71,7 +73,7 @@ export const viewClubSchedule = async (req, res) => {
       events.push([startIdx, length, club_schedule_id, club_schedule_title]);
     }
 
-    //0과 1 -> 1바이트로 변환
+    // 8비트 단위로 바이트 배열 생성
     const packedTimeData = [];
     for (let i = 0; i < timeData.length; i += 8) {
       let byte = 0;
@@ -83,25 +85,8 @@ export const viewClubSchedule = async (req, res) => {
       packedTimeData.push(byte);
     }
 
-    //base64인코딩
-    const timeField = Buffer.from(packedTimeData).toString("base64");
-
-    /* 
-    //프론트에서 디코딩 방법
-    const timeDataBase64 = "여기에 서버에서 받은 timeData"; 
-
-    // Base64를 디코딩하여 바이너리 데이터로 변환
-    const buffer = Buffer.from(timeDataBase64, "base64");
-
-    // 바이너리 데이터를 210칸짜리 0/1 배열로 변환
-    const timeData = [];  
-    for (let byte of buffer) {
-      for (let i = 7; i >= 0; i--) {
-          if (timeData.length < 210) { // 210개까지만 저장
-              timeData.push((byte >> i) & 1);
-            }
-        }
-    } */
+    //base91 인코딩
+    const timeField = encodeBase91(new Uint8Array(packedTimeData));
 
     logger.debug("동아리 주간 일정을 보냈습니다.");
     return res.json({

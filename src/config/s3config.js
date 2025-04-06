@@ -10,10 +10,10 @@ export const s3Client = new S3Client({
     accessKeyId: process.env.R2_ACCESS_KEY_ID,
     secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
   },
-  forcePathStyle: false, // R2는 virtual-hosted-style 사용 (이게 기본)
+  forcePathStyle: false, // R2는 virtual-hosted-style 사용
 });
 
-// R2 연결 확인
+// R2 연결 확인 (s3랑 다르게 더미데이터를 주고받으면서 확인해야함)
 export const checkS3Connection = async () => {
   const bucketName = process.env.R2_BUCKET_NAME;
   const testKey = `connection-test-${Date.now()}`;

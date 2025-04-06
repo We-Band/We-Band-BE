@@ -99,15 +99,14 @@ export const handleKakaoUser = async (req, res) => {
 
     const { id: kakaoId, kakao_account, properties } = userInfo; // 카카오 사용자 ID 및 계정 정보
     const email = kakao_account.email;
-    const userName = properties.nickname || email.split('@')[0];
+    const userName = properties.nickname || email.split("@")[0];
     const profile_img = properties.profile_image || null;
- 
-    
+
     // 데이터베이스에서 사용자 확인 또는 새 사용자 생성
     let user = await prisma.weBandUser.findUnique({ where: { email } });
 
     if (!user) {
-      // 새 사용자 생성 
+      // 새 사용자 생성
       user = await prisma.weBandUser.create({
         data: {
           kakao_id: BigInt(kakaoId),
@@ -149,13 +148,15 @@ export const handleKakaoUser = async (req, res) => {
   }
 };
 
+//로그아웃
 export const logout = async (req, res) => {
   try {
     if (!req.user) {
       logger.debug("로그인 상태가 아닙니다");
       return res.status(400).json({ message: "로그인 상태가 아닙니다." });
-    }
+    } //쿠키 정보로 로그인 상태 확인
 
+    //쿠키 파쇄
     res.cookie("refreshToken", "", {
       httpOnly: true,
       secure: process.env.NODE_ENV !== "dev",
@@ -180,6 +181,7 @@ export const withdraw = async (req, res) => {
       return res.status(400).json({ message: "로그인 상태가 아닙니다." });
     }
 
+    //사용자 삭제(hard-delete) 프론트에서 검증로직 추가 필요
     await prisma.weBandUser.delete({
       where: {
         user_id: userId,

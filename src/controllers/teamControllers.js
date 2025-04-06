@@ -5,11 +5,14 @@ import { s3Client } from "../config/s3config.js"; // R2 클라이언트 설정
 
 const prisma = new PrismaClient();
 
+// 동아리 팀 관련 API
+// 팀 목록 조회 API (GET /clubs/:clubId/teams)
 export const getTeam = async (req, res) => {
   try {
     const { clubId } = req.params;
     const { type } = req.query;
 
+    // type이 "my"인 경우, 내가 속한 팀 목록 조회
     if (type == "my") {
       const userId = req.user.user_id;
 
@@ -33,6 +36,7 @@ export const getTeam = async (req, res) => {
       logger.debug("내 팀 목록 조회 성공", { clubId, myTeams });
       return res.status(200).json(myTeams);
     } else {
+      // type이 없는경우 모든 팀 목록 조회
       const teams = await prisma.team.findMany({
         where: {
           club_id: Number(clubId),
@@ -55,6 +59,7 @@ export const getTeam = async (req, res) => {
   }
 };
 
+// 팀 정보 조회 API (GET /clubs/:clubId/teams/:teamId)
 export const viewTeam = async (req, res) => {
   try {
     const { clubId, teamId } = req.params;
@@ -65,6 +70,7 @@ export const viewTeam = async (req, res) => {
       teamName: req.team.team_name,
     };
 
+    // 팀원 정보 조회
     const teamMember = await prisma.teamMember.findUnique({
       where: {
         team_id: Number(teamId),
@@ -92,6 +98,7 @@ export const viewTeam = async (req, res) => {
   }
 };
 
+// 팀원 목록 조회 API (GET /clubs/:clubId/teams/:teamId/members)
 export const viewMemberList = async (req, res) => {
   try {
     const { clubId } = req.params;
@@ -129,10 +136,12 @@ export const viewMemberList = async (req, res) => {
   }
 };
 
+// 팀 생성 API (POST /clubs/:clubId/teams)
 export const createTeam = async (req, res) => {
   try {
     const { clubId } = req.params;
     const { teamName, members } = req.body;
+    const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
     let profileImageUrl;
 
     if (!teamName) {
@@ -146,10 +155,10 @@ export const createTeam = async (req, res) => {
     // 파일이 없으면 기본 이미지를 사용
     if (!req.file) {
       // 기본 이미지 URL (AWS S3에 저장된 기본 이미지를 사용할 수 있도록 따로 설정예정)
-      profileImageUrl = `https://${process.env.AWS_S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/profile/default/default-image.jpg`;
+      profileImageUrl = `https://${bucketName}.${accountId}.r2.cloudflarestorage.com`;
     } else {
       // 파일이 있으면 AWS S3에 업로드
-      const bucketName = process.env.AWS_S3_BUCKET_NAME;
+      const bucketName = process.env.R2_BUCKET_NAME;
       const key = `profile/custom/${req.user.userID}/${
         req.user.userID
       }-${Date.now()}`;
@@ -164,9 +173,10 @@ export const createTeam = async (req, res) => {
       await s3Client.send(command);
 
       // 업로드된 파일의 URL 생성
-      profileImageUrl = `https://${bucketName}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
+      profileImageUrl = `https://${bucketName}.${accountId}.r2.cloudflarestorage.com/${key}`;
     }
 
+    // 팀 생성
     const createdTeam = await prisma.team.create({
       data: {
         team_name: teamName,
@@ -192,10 +202,12 @@ export const createTeam = async (req, res) => {
       .json({ message: "팀 생성 중 서버 오류가 발생했습니다." });
   }
 };
-
+// 팀 이미지 변경 API (PUT /clubs/:clubId/teams/:teamId/profile)
 export const changeTeamProfile = async (req, res) => {
   try {
     const teamId = req.team.team_id;
+    const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+    const bucketName = process.env.R2_BUCKET_NAME;
 
     // 기존 팀 정보 가져오기
     const team = await prisma.team.findUnique({
@@ -249,7 +261,7 @@ export const changeTeamProfile = async (req, res) => {
 
       await s3Client.send(uploadCommand);
 
-      profileImageUrl = `https://${process.env.R2_BUCKET_NAME}.${process.env.R2_PUBLIC_DOMAIN}/${key}`;
+      profileImageUrl = `https://${bucketName}.${accountId}.r2.cloudflarestorage.com/${key}`;
     }
 
     // DB 업데이트
@@ -268,6 +280,7 @@ export const changeTeamProfile = async (req, res) => {
   }
 };
 
+// 팀 이름 변경 API (PATCH /clubs/:clubId/teams/:teamId/name)
 export const changeTeamName = async (req, res) => {
   try {
     const { clubId, teamId } = req.params;
@@ -296,6 +309,7 @@ export const changeTeamName = async (req, res) => {
   }
 };
 
+// 팀원 추가 API (POST /clubs/:clubId/teams/:teamId/members)
 export const addTeamMembers = async (req, res) => {
   try {
     const { clubId, teamId } = req.params;
@@ -323,6 +337,7 @@ export const addTeamMembers = async (req, res) => {
   }
 };
 
+// 팀 삭제 API (DELETE /clubs/:clubId/teams/:teamId)
 export const deleteTeam = async (req, res) => {
   try {
     const { clubId, teamId } = req.params;
@@ -342,6 +357,7 @@ export const deleteTeam = async (req, res) => {
   }
 };
 
+// 팀원 삭제 API (DELETE /clubs/:clubId/teams/:teamId/members)
 export const kickTeamMember = async (req, res) => {
   try {
     const { clubId, teamId } = req.params;
@@ -367,6 +383,7 @@ export const kickTeamMember = async (req, res) => {
   }
 };
 
+// 팀 탈퇴 API (DELETE /clubs/:clubId/teams/:teamId/leave)
 export const leaveTeam = async (req, res) => {
   try {
     const { clubId, teamId } = req.params;
@@ -392,6 +409,7 @@ export const leaveTeam = async (req, res) => {
   }
 };
 
+// 팀장 변경 API (PATCH /clubs/:clubId/teams/:teamId/leader)
 export const changeTeamLeader = async (req, res) => {
   try {
     const { clubId, teamId } = req.params;

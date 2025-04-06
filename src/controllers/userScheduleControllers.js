@@ -1,12 +1,13 @@
 import express from "express";
 import { logger } from "../utils/logger.js";
 import { PrismaClient } from "@prisma/client";
+import { encodeBase91 } from "../utils/base91.js";
 
 const router = express.Router();
 
 export const prisma = new PrismaClient();
 
-//(GET /userss/:userId/userSchedules?day=2025-03-10)
+//(GET /userss/:userId/user-schedules?day=2025-03-10)
 export const viewUserSchedule = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -81,7 +82,7 @@ export const viewUserSchedule = async (req, res) => {
       events.push([startIdx, length, user_schedule_id, user_schedule_title]);
     }
 
-    //0과 1 -> 1바이트로 변환
+    // 8비트 단위로 바이트 배열 생성
     const packedTimeData = [];
     for (let i = 0; i < timeData.length; i += 8) {
       let byte = 0;
@@ -93,8 +94,8 @@ export const viewUserSchedule = async (req, res) => {
       packedTimeData.push(byte);
     }
 
-    //base64인코딩
-    const timeField = Buffer.from(packedTimeData).toString("base64");
+    // base91로 인코딩
+    const timeField = encodeBase91(new Uint8Array(packedTimeData));
 
     logger.debug("사용자 주간 일정을 보냈습니다.");
     return res.json({
@@ -109,7 +110,7 @@ export const viewUserSchedule = async (req, res) => {
   }
 };
 
-//사용자 일정 정보 조회 API (GET /user/:userId/userSchedule/:userScheduleId)
+//사용자 일정 정보 조회 API (GET /user/:userId/user-schedule/:userScheduleId)
 export const viewDetailUserSchedule = async (req, res) => {
   try {
     const { userId, userScheduleId } = req.params;
@@ -152,7 +153,7 @@ export const viewDetailUserSchedule = async (req, res) => {
   }
 };
 
-//사용자 일정 추가 (POST /user/:userId/userSchdule)
+//사용자 일정 추가 (POST /user/:userId/user-schdule)
 export const addUserSchedule = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -185,7 +186,7 @@ export const addUserSchedule = async (req, res) => {
   }
 };
 
-//사용자 일정 삭제 API (DELETE /user/:userId/userSchdule/:userScheduleId)
+//사용자 일정 삭제 API (DELETE /user/:userId/user-schdule/:userScheduleId)
 export const deleteUserSchedule = async (req, res) => {
   try {
     const { userScheduleId } = req.params;
@@ -203,7 +204,7 @@ export const deleteUserSchedule = async (req, res) => {
   }
 };
 
-//사용자 일정 수정 API (PATCH /user/:userId/userSchedule/:userScheduld)
+//사용자 일정 수정 API (PATCH /user/:userId/user-schedule/:userScheduld)
 export const modifyUserSchedule = async (req, res) => {
   try {
     const { userId, userScheduleId } = req.params;
@@ -214,14 +215,12 @@ export const modifyUserSchedule = async (req, res) => {
     const updatedUserSchedule = await prisma.userSchedule.update({
       where: { user_schedule_id: Number(userScheduleId) },
       data: {
-        user_schedule_time: userScheduleTime
-          ? new Date(userScheduleTime)
-          : existingSchedule.user_schedule_time,
-        user_schedule_title:
-          userScheduleTitle ?? existingSchedule.user_schedule_title,
-        user_schedule_place:
-          userSchedulePlace ?? existingSchedule.user_schedule_place,
-        is_public: isPublic ?? existingSchedule.is_public,
+        user_schedule_start: new Date(userScheduleStart),
+        user_schedule_end: new Date(userScheduleEnd),
+        user_schedule_title: userScheduleTitle,
+        user_schedule_place: userSchedulePlace || "",
+        user_schedule_participants: userScheduleParticipants || "",
+        is_public: isPublic || true,
       },
     });
 
