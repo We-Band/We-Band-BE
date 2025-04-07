@@ -16,5 +16,5 @@ const server = http.createServer(app);
 
 server.listen(PORT, async () => {
   logger.info(`Server running on http://localhost:${PORT}`);
-  await checkS3Connection(); // S3 연결 확인
+  await checkS3Connection(); // r2 연결 확인
 });

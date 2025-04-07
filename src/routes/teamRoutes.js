@@ -56,9 +56,9 @@ router.patch(
   isTeamLeader,
   upload.single("profileImage"),
   changeTeamProfile
-);
+); // 팀 프로필 사진 변경
 
-router.patch("/:teamId/name", verifyTeam, isTeamLeader, changeTeamName); //
+router.patch("/:teamId/name", verifyTeam, isTeamLeader, changeTeamName); // 팀 이름 변경
 
 router.patch("/:teamId/leader", verifyTeam, isTeamLeader, changeTeamLeader); // 팀장 변경
 
