@@ -4,9 +4,8 @@ import {
   getCurrentUser,
   updateProfileImage,
   updateUsername,
-} from "../controllers/userControllers.js";
+} from "../controllers/user/userControllers.js";
 import { authMiddleware } from "../middlewares/authMiddlewares.js";
-import {} from "../controllers/userControllers.js";
 
 const router = express.Router();
 

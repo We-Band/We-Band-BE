@@ -20,7 +20,7 @@ import {
   kickTeamMember,
   leaveTeam,
   changeTeamLeader,
-} from "../controllers/teamControllers.js";
+} from "../controllers/team/teamControllers.js";
 
 const router = express.Router({ mergeParams: true }); // mergeParams 추가
 

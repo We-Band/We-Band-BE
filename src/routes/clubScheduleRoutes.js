@@ -12,7 +12,7 @@ import {
   addClubSchedule,
   deleteClubSchedule,
   modifyClubSchedule,
-} from "../controllers/clubScheduleControllers.js";
+} from "../controllers/clubSchedule/clubScheduleControllers.js";
 
 const router = express.Router({ mergeParams: true });
 
