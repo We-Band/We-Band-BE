@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { logger } from "../utils/logger.js";
-
+import { teamScheduleRepository } from "../repositories/teamScheduleRepository.js";
 export const prisma = new PrismaClient();
 
 // 팀 일정 존재 여부 검증 미들웨어
@@ -8,12 +8,9 @@ export const verifyTeamSchedule = async (req, res, next) => {
   try {
     const { clubId, teamId, teamScheduleId } = req.params;
 
-    const teamSchedule = await prisma.teamSchedule.findUnique({
-      where: {
-        team_schedule_id: Number(teamScheduleId),
-      },
-    });
-
+    const teamSchedule = await teamScheduleRepository.getTeamScheduleById(
+      teamScheduleId
+    );
     if (!teamSchedule) {
       logger.debug("존재하지 않는 동아리 일정");
       return res
