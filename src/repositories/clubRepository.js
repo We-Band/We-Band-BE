@@ -1,8 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
-export const ClubRepository = {
-  getClubById: async (clubId) =>
+export const clubRepository = {
+  getClubById: async (clubId) => {
     await prisma.club.findUnique({
       where: { club_id: Number(clubId) },
       select: {
@@ -12,54 +12,63 @@ export const ClubRepository = {
         club_leader: true,
         member_count: true,
       },
-    }),
+    });
+  },
 
-  findByCode: async (code) =>
+  findByCode: async (code) => {
     await prisma.club.findUnique({
       where: { club_code: code },
       select: { club_id: true },
-    }),
+    });
+  },
 
-  isMember: async (clubId, userId) =>
+  isMember: async (clubId, userId) => {
     await prisma.clubMember.findFirst({
       where: { club_id: clubId, user_id: userId },
-    }),
+    });
+  },
 
-  addMember: async (clubId, userId) =>
+  addMember: async (clubId, userId) => {
     await prisma.clubMember.create({
       data: { club_id: clubId, user_id: userId },
-    }),
+    });
+  },
 
-  removeMember: async (clubId, userId) =>
+  removeMember: async (clubId, userId) => {
     await prisma.clubMember.delete({
       where: { club_id_user_id: { club_id: clubId, user_id: userId } },
-    }),
+    });
+  },
 
-  incrementMemberCount: async (clubId) =>
+  incrementMemberCount: async (clubId) => {
     await prisma.club.update({
       where: { club_id: clubId },
       data: { member_count: { increment: 1 } },
-    }),
+    });
+  },
 
-  decrementMemberCount: async (clubId) =>
+  decrementMemberCount: async (clubId) => {
     await prisma.club.update({
       where: { club_id: clubId },
       data: { member_count: { decrement: 1 } },
-    }),
+    });
+  },
 
-  updateCode: async (clubId, newCode) =>
+  updateCode: async (clubId, newCode) => {
     await prisma.club.update({
       where: { club_id: clubId },
       data: { club_code: newCode },
-    }),
+    });
+  },
 
-  updateLeader: async (clubId, newLeader) =>
+  updateLeader: async (clubId, newLeader) => {
     await prisma.club.update({
       where: { club_id: clubId },
       data: { club_leader: newLeader },
-    }),
+    });
+  },
 
-  getMembers: async (clubId) =>
+  getMembers: async (clubId) => {
     await prisma.clubMember.findMany({
       where: { club_id: Number(clubId) },
       orderBy: { created_at: "asc" },
@@ -68,5 +77,6 @@ export const ClubRepository = {
           select: { user_id: true, user_name: true, profile_image: true },
         },
       },
-    }),
+    });
+  },
 };

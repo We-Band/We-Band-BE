@@ -1,7 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { logger } from "../utils/logger.js";
-import { get } from "http";
-
+import { clubRepository } from "../repositories/clubRepository.js";
 const prisma = new PrismaClient();
 
 // 동아리 존재 여부 검증 미들웨어
@@ -28,64 +27,6 @@ export const verifyClub = async (req, res, next) => {
   }
 };
 
-//동아리 탈퇴할떄 검증
-export const isMyClub = async (req, res, next) => {
-  try {
-    const { clubId } = req.params;
-    const userId = req.user.user_id;
-
-    //clubMember 테이블에서 동아리 가입여부 검증
-    const existingMember = await prisma.clubMember.findFirst({
-      where: {
-        club_id: Number(clubId),
-        user_id: Number(userId),
-      },
-    });
-
-    if (!existingMember) {
-      logger.debug("동아리에 가입하지 않은 사용자 입니다.");
-      return res
-        .status(409)
-        .json({ message: "동아리에 가입되지 않은 사용자입니다." });
-    }
-
-    logger.debug("동아리 가입 여부 검증 완료");
-    next();
-  } catch (error) {
-    logger.error(`동아리 가입 여부 검증 실패${error.message}`, { error });
-    return res.status(500).json({ message: "서버 오류 발생" });
-  }
-};
-
-//동아리 추방시 검증
-export const isUserJoinedClub = async (req, res, next) => {
-  try {
-    const { clubId } = req.params;
-    const { userId } = req.body;
-
-    //clubMember 테이블에서 동아리 가입여부 검증
-    const existingMember = await prisma.clubMember.findFirst({
-      where: {
-        club_id: Number(clubId),
-        user_id: Number(userId),
-      },
-    });
-
-    if (!existingMember) {
-      logger.debug("동아리에 가입하지 않은 사용자 입니다.");
-      return res
-        .status(409)
-        .json({ message: "동아리에 가입되지 않은 사용자입니다." });
-    }
-
-    logger.debug("가입 여부 검증 완료");
-    next();
-  } catch (error) {
-    logger.error(`동아리 가입 여부 검증 실패${error.message}`, { error });
-    return res.status(500).json({ message: "서버 오류 발생" });
-  }
-};
-
 //회장 확인
 export const isLeader = async (req, res, next) => {
   try {
@@ -105,5 +46,36 @@ export const isLeader = async (req, res, next) => {
   } catch (error) {
     logger.error(`회장 검증 과정 중 실패: ${error.message}`, { error });
     return res.status(500).json({ message: "서버 오류 발생" });
+  }
+};
+
+export const isClubMember = async (req, res, next) => {
+  try {
+    const { clubId } = req.params;
+    const userIdFromBody = req.body;
+    const userIdFromToken = req.user.user_id;
+    const route = req.route.path;
+
+    let userId;
+    if (route.includes("kick-member")) {
+      userId = userIdFromBody;
+    } else if (route.includes("leave")) {
+      userId = userIdFromToken;
+    } else {
+      return res.status(400).json({ message: "지원하지 않는 요청입니다." });
+    }
+
+    const isClubMember = await clubRepository.isMember({
+      userId,
+      clubId,
+    });
+    if (isClubMember) {
+      logger.debug("동아리원 검증 완료");
+    } else {
+      logger.debug("동아리에 속한 유저가 아닙니다.");
+    }
+  } catch (error) {
+    logger.error(`동아리 검증 과정 중 실패 ${error.message}`, { error });
+    return res.status(500).json({ messae: "서버 오류 발생" });
   }
 };

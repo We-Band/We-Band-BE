@@ -2,9 +2,8 @@ import express from "express";
 import { authMiddleware } from "../middlewares/authMiddlewares.js";
 import {
   verifyClub,
-  isMyClub,
-  isUserJoinedClub,
   isLeader,
+  isClubMember,
 } from "../middlewares/clubMiddlewares.js";
 import {
   joinClub,
@@ -13,7 +12,7 @@ import {
   kickMember,
   changeCode,
   changeLeader,
-} from "../controllers/club/clubControllers.js";
+} from "../controllers/clubControllers.js";
 
 const router = express.Router();
 
@@ -23,13 +22,13 @@ router.post("/", joinClub); //동아리 가입
 
 router.get("/", verifyClub, viewClub); //동아리 정보 조회
 
-router.delete("/:clubId", verifyClub, isMyClub, quitClub); //동아리 탈퇴
+router.delete("/:clubId/leave", verifyClub, isClubMember, quitClub); //동아리 탈퇴
 
 router.delete(
-  "/:clubId/kick",
+  "/:clubId/kick-member",
   verifyClub,
   isLeader,
-  isUserJoinedClub,
+  isClubMember,
   kickMember
 ); //동아리 추방
 

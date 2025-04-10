@@ -71,8 +71,15 @@ export const isTeamMember = async (req, res, next) => {
       return res.status(400).json({ message: "지원하지 않는 요청입니다." });
     }
 
-    await teamRepository.isTeamMember({ targetUserId, teamId });
-    logger.debug("팀원 검증 완료");
+    const isTeamMember = await teamRepository.isTeamMember({
+      targetUserId,
+      teamId,
+    });
+    if (isTeamMember) {
+      logger.debug("팀원 검증 완료");
+    } else {
+      logger.debug("팀에 속한 유저가 아닙니다.");
+    }
   } catch (error) {
     logger.error(`팀원 검증 과정 중 실패 ${error.message}`, { error });
     return res.status(500).json({ messae: "서버 오류 발생" });
