@@ -23,7 +23,7 @@ export const getTeam = async (req, res) => {
     }
 
     const teams = teamService.getTeam(clubId, type);
-    return res.status(200).json({ message: "팀 목록 조회 성공", teams });
+    return res.status(200).json({ teams });
   } catch (error) {
     logger.error(`팀 목록 조회 검증 실패: ${error.message}`, { error });
     return res
@@ -41,7 +41,6 @@ export const viewTeam = async (req, res) => {
 
     logger.debug("팀 조회 성공", { clubId, teamId, teamInfo });
     return res.status(200).json({
-      message: "팀 조회 성공",
       data: teamInfo,
     });
   } catch (error) {
@@ -57,9 +56,7 @@ export const viewMemberList = async (req, res) => {
     const teamMembers = await teamService.viewMemberList(clubId);
 
     logger.debug(`동아리 회원 목록 조회 성공, ${clubId}`);
-    return res
-      .status(200)
-      .json({ message: "동아리 회원 목록 조회 성공", teamMember: teamMembers });
+    return res.status(200).json({ teamMember: teamMembers });
   } catch (error) {
     logger.error(`동아리 회원 목록 조회 중 오류 발생: ${error.message}`);
     return res
