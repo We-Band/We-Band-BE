@@ -6,7 +6,7 @@ export const viewClubSchedule = async (req, res) => {
     const { clubId } = req.params;
     const { day } = req.query;
 
-    const result = await getClubWeeklyScheduleService(clubId, day);
+    const result = await clubScheduleService.getClubWeeklySchedule(clubId, day);
     logger.debug("동아리 주간 일정을 보냈습니다.");
     res.json(result);
   } catch (error) {
@@ -36,7 +36,10 @@ export const addClubSchedule = async (req, res) => {
     const { clubId } = req.params;
     const scheduleData = req.body;
 
-    const result = await createClubScheduleService(clubId, scheduleData);
+    const result = await clubScheduleServic.createClubSchedule(
+      clubId,
+      scheduleData
+    );
     logger.debug("동아리 일정이 추가 됐습니다.");
     res.status(201).json(result);
   } catch (error) {
@@ -49,7 +52,7 @@ export const deleteClubSchedule = async (req, res) => {
   try {
     const { clubScheduleId } = req.params;
 
-    await deleteClubScheduleService(clubScheduleId);
+    await clubScheduleServic.deleteClubSchedule(clubScheduleId);
     logger.debug("동아리 일정이 삭제 됐습니다.");
     res.status(200).json({ message: "동아리 일정이 삭제되었습니다." });
   } catch (error) {
@@ -63,7 +66,7 @@ export const updateClubSchedule = async (req, res) => {
     const { clubId, clubScheduleId } = req.params;
     const scheduleData = req.body;
 
-    const result = await updateClubScheduleService(
+    const result = await clubScheduleServic.updateClubSchedule(
       clubId,
       clubScheduleId,
       scheduleData

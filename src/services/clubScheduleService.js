@@ -85,7 +85,7 @@ export const clubScheduleService = {
     return await clubScheduleRepository.updateClubSchedule(clubScheduleId, dto);
   },
 
-  deleteClubScheduleService: async (clubScheduleId) => {
+  deleteClubSchedule: async (clubScheduleId) => {
     await deleteClubScheduleById(Number(clubScheduleId));
   },
 };
