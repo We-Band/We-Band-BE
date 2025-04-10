@@ -1,5 +1,6 @@
 import { clubScheduleService } from "../services/clubScheduleService.js";
 import { logger } from "../../utils/logger.js";
+import { clubScheduleDto } from "../dtos/clubScheduleDto.js";
 
 export const viewClubSchedule = async (req, res) => {
   try {
@@ -34,12 +35,9 @@ export const viewDetailClubSchedule = async (req, res) => {
 export const addClubSchedule = async (req, res) => {
   try {
     const { clubId } = req.params;
-    const scheduleData = req.body;
+    const dto = new clubScheduleDto(req.body);
 
-    const result = await clubScheduleServic.createClubSchedule(
-      clubId,
-      scheduleData
-    );
+    const result = await clubScheduleService.createClubSchedule(clubId, dto);
     logger.debug("동아리 일정이 추가 됐습니다.");
     res.status(201).json(result);
   } catch (error) {
@@ -52,7 +50,7 @@ export const deleteClubSchedule = async (req, res) => {
   try {
     const { clubScheduleId } = req.params;
 
-    await clubScheduleServic.deleteClubSchedule(clubScheduleId);
+    await clubScheduleService.deleteClubSchedule(clubScheduleId);
     logger.debug("동아리 일정이 삭제 됐습니다.");
     res.status(200).json({ message: "동아리 일정이 삭제되었습니다." });
   } catch (error) {
@@ -64,12 +62,11 @@ export const deleteClubSchedule = async (req, res) => {
 export const updateClubSchedule = async (req, res) => {
   try {
     const { clubId, clubScheduleId } = req.params;
-    const scheduleData = req.body;
+    const dto = new clubScheduleDto(req.body);
 
-    const result = await clubScheduleServic.updateClubSchedule(
-      clubId,
+    const result = await clubScheduleService.updateClubSchedule(
       clubScheduleId,
-      scheduleData
+      dto
     );
     logger.debug("동아리 일정이 수정되었습니다.");
     res.status(200).json(result);
