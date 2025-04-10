@@ -1,8 +1,8 @@
-export const createClubScheduleDto = (body) => {
-  return {
-    clubScheduleStart: new Date(body.clubScheduleStart),
-    clubScheduleEnd: new Date(body.clubScheduleEnd),
-    clubScheduleTitle: body.clubScheduleTitle,
-    clubSchedulePlace: body.clubSchedulePlace || "",
-  };
-};
+export class userScheduleDto {
+  constructor(body) {
+    this.clubScheduleStart = new Date(body.clubScheduleStart);
+    this.clubrScheduleEnd = new Date(body.clubScheduleEnd);
+    this.clubScheduleTitle = body.clubScheduleTitle;
+    this.clubSchedulePlace = body.clubSchedulePlace || "";
+  }
+}

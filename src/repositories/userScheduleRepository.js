@@ -30,7 +30,7 @@ export const userScheduleRepository = {
   },
 
   createUserSchedule: async (scheduleData) => {
-    return await prisma.userSchedule.create({ scheduleData });
+    return await prisma.userSchedule.create({ data: scheduleData });
   },
 
   deleteUserSchedule: async (userScheduleId) => {
@@ -42,7 +42,7 @@ export const userScheduleRepository = {
   updateUserSchedule: async (userScheduleId, scheduleData) => {
     return await prisma.userSchedule.update({
       where: { user_schedule_id: Number(userScheduleId) },
-      scheduleData,
+      data: scheduleData,
     });
   },
 };

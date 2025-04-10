@@ -1,10 +1,4 @@
-import {
-  getClubWeeklyScheduleService,
-  getClubScheduleDetailService,
-  createClubScheduleService,
-  deleteClubScheduleService,
-  updateClubScheduleService,
-} from "../service/clubScheduleService.js";
+import { clubScheduleService } from "../services/clubScheduleService.js";
 import { logger } from "../../utils/logger.js";
 
 export const viewClubSchedule = async (req, res) => {
@@ -25,11 +19,10 @@ export const viewClubSchedule = async (req, res) => {
 
 export const viewDetailClubSchedule = async (req, res) => {
   try {
-    const { clubScheduleId } = req.params;
+    const clubSchedule = req.clubSchedule;
 
-    const result = await getClubScheduleDetailService(clubScheduleId);
-    logger.debug(`동아리 일정 정보를 보냈습니다., ${clubScheduleId}`);
-    res.json(result);
+    logger.debug(`동아리 일정 정보를 보냈습니다., `);
+    res.json(clubSchedule);
   } catch (error) {
     logger.error(`동아리 일정 정보 조회 중 오류 발생: ${error.message}`, error);
     res
@@ -65,7 +58,7 @@ export const deleteClubSchedule = async (req, res) => {
   }
 };
 
-export const modifyClubSchedule = async (req, res) => {
+export const updateClubSchedule = async (req, res) => {
   try {
     const { clubId, clubScheduleId } = req.params;
     const scheduleData = req.body;

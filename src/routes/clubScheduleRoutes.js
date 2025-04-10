@@ -11,8 +11,8 @@ import {
   viewDetailClubSchedule,
   addClubSchedule,
   deleteClubSchedule,
-  modifyClubSchedule,
-} from "../controllers/clubSchedule/clubScheduleControllers.js";
+  updateClubSchedule,
+} from "../controllers/clubScheduleControllers.js";
 
 const router = express.Router({ mergeParams: true });
 
@@ -45,7 +45,7 @@ router.patch(
   verifyClubSchedule,
   isMissingClubSchedule,
   isConflictSchedule,
-  modifyClubSchedule
+  updateClubSchedule
 ); // 동아리 일정 수정
 
 export default router;

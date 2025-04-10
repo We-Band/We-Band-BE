@@ -1,10 +1,6 @@
 import { userScheduleService } from "../services/userScheduleService.js";
-import {
-  CreateUserScheduleDto,
-  UpdateUserScheduleDto,
-} from "../dtos/userScheduleDto.js";
+import { userScheduleDto } from "../dtos/userScheduleDto.js";
 import { logger } from "../utils/logger.js";
-import { userScheduleRepository } from "../repositories/userScheduleRepository.js";
 
 export const viewUserSchedule = async (req, res) => {
   try {
@@ -31,12 +27,11 @@ export const viewDetailUserSchedule = async (req, res) => {
   try {
     const userSchedule = req.userSchedule;
 
-    const result = await userScheduleService.fetchUserScheduleDetail(
-      userSchedule
-    );
+    const userScheduleDetail =
+      await userScheduleService.fetchUserScheduleDetail(userSchedule);
 
     logger.debug("사용자 일정 정보 조회 성공");
-    return res.json(result);
+    return res.json(userScheduleDetail);
   } catch (error) {
     logger.error(`사용자 일정 정보 조회 실패: ${error.message}`, { error });
     return res
@@ -48,7 +43,7 @@ export const viewDetailUserSchedule = async (req, res) => {
 export const addUserSchedule = async (req, res) => {
   try {
     const { userId } = req.params;
-    const dto = new CreateUserScheduleDto(req.body);
+    const dto = new userScheduleDto(req.body);
 
     const result = await userScheduleService.addUserSchedule(userId, dto);
 
@@ -65,7 +60,7 @@ export const addUserSchedule = async (req, res) => {
 export const updateUserSchedule = async (req, res) => {
   try {
     const { userScheduleId } = req.params;
-    const dto = new UpdateUserScheduleDto(req.body);
+    const dto = new userScheduleDto(req.body);
 
     const result = await userScheduleService.updateUserSchedule(
       userScheduleId,

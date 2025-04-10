@@ -1,114 +1,91 @@
-import {
-  findClubSchedulesByWeek,
-  findClubScheduleById,
-  createClubSchedule,
-  deleteClubScheduleById,
-  updateClubScheduleById,
-} from "../repository/clubScheduleRepository.js";
-
+import { clubScheduleRepository } from "../repository/clubScheduleRepository.js";
 import { encodeBase91 } from "../../utils/base91.js";
+import { logger } from "../utils/logger.js";
 
 // 주간 일정 조회
-export const getClubWeeklyScheduleService = async (clubId, day) => {
-  const inputDate = new Date(day);
-  const dayOfWeek = inputDate.getDay();
-  const startDate = new Date(inputDate);
-  startDate.setDate(
-    inputDate.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1)
-  ); // 월요일
-  startDate.setHours(0, 0, 0, 0);
+export const clubScheduleService = {
+  getClubWeeklySchedule: async (clubId, day) => {
+    const inputDate = new Date(day);
+    const dayOfWeek = inputDate.getDay();
+    const startDate = new Date(inputDate);
+    startDate.setDate(
+      inputDate.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1)
+    ); // 월요일
+    startDate.setHours(0, 0, 0, 0);
 
-  const endDate = new Date(startDate);
-  endDate.setDate(startDate.getDate() + 6);
-  endDate.setHours(23, 59, 59, 999);
+    const endDate = new Date(startDate);
+    endDate.setDate(startDate.getDate() + 6);
+    endDate.setHours(23, 59, 59, 999);
 
-  const clubSchedules = await findClubSchedulesByWeek(
-    Number(clubId),
-    startDate,
-    endDate
-  );
-
-  let timeData = Array(210).fill(0);
-  let events = [];
-
-  for (let schedule of clubSchedules) {
-    const {
-      club_schedule_id,
-      club_schedule_start,
-      club_schedule_end,
-      club_schedule_title,
-    } = schedule;
-
-    const startIdx = Math.floor(
-      (club_schedule_start - startDate) / (30 * 60 * 1000)
-    );
-    const length = Math.floor(
-      (club_schedule_end - club_schedule_start) / (30 * 60 * 1000)
+    const clubSchedules = await clubScheduleRepository.getClubSchedulesByWeek(
+      Number(clubId),
+      startDate,
+      endDate
     );
 
-    for (let i = startIdx; i < startIdx + length; i++) {
-      timeData[i] = 1;
-    }
+    logger.debug("동아리 주간 일정 객체 생성 성공");
 
-    events.push([startIdx, length, club_schedule_id, club_schedule_title]);
-  }
+    //timeField연산
+    let timeData = Array(210).fill(0);
+    let events = [];
 
-  const packedTimeData = [];
-  for (let i = 0; i < timeData.length; i += 8) {
-    let byte = 0;
-    for (let j = 0; j < 8; j++) {
-      if (i + j < timeData.length) {
-        byte |= timeData[i + j] << (7 - j);
+    for (let schedule of clubSchedules) {
+      const {
+        club_schedule_id,
+        club_schedule_start,
+        club_schedule_end,
+        club_schedule_title,
+      } = schedule;
+
+      const startIdx = Math.floor(
+        (club_schedule_start - startDate) / (30 * 60 * 1000)
+      ); //30분 단위 인덱스
+      const length = Math.floor(
+        (club_schedule_end - club_schedule_start) / (30 * 60 * 1000)
+      );
+
+      //해당 시간에 일정이 있으면 1로 표시
+      for (let i = startIdx; i < startIdx + length; i++) {
+        timeData[i] = 1;
       }
+
+      //events 배열 생성
+      events.push([startIdx, length, club_schedule_id, club_schedule_title]);
     }
-    packedTimeData.push(byte);
-  }
 
-  const timeField = encodeBase91(new Uint8Array(packedTimeData));
+    const packedTimeData = [];
+    for (let i = 0; i < timeData.length; i += 8) {
+      let byte = 0;
+      for (let j = 0; j < 8; j++) {
+        if (i + j < timeData.length) {
+          byte |= timeData[i + j] << (7 - j);
+        }
+      }
+      packedTimeData.push(byte);
+    }
 
-  return {
-    timeData: timeField,
-    events,
-  };
-};
+    //base91인코딩
+    const timeField = encodeBase91(new Uint8Array(packedTimeData));
 
-export const getClubScheduleDetailService = async (clubScheduleId) => {
-  const clubSchedule = await findClubScheduleById(Number(clubScheduleId));
-  if (!clubSchedule) throw new Error("일정이 존재하지 않습니다.");
+    logger.debug("동아리 주간 일정 객체 수정 완료");
+    return {
+      timeData: timeField,
+      events,
+    };
+  },
 
-  const {
-    club_schedule_start,
-    club_schedule_end,
-    club_schedule_title,
-    club_schedule_place,
-  } = clubSchedule;
+  addUserSchedule: async ({ clubId, dto }) => {
+    return await clubScheduleRepository.createclubSchedule({
+      club_id: Number(clubId),
+      ...dto,
+    });
+  },
 
-  return {
-    club_schedule_start,
-    club_schedule_end,
-    club_schedule_title,
-    club_schedule_place,
-  };
-};
+  updateUserSchedule: async ({ clubScheduleId, dto }) => {
+    return await clubScheduleRepository.updateClubSchedule(clubScheduleId, dto);
+  },
 
-export const createClubScheduleService = async (clubId, scheduleData) => {
-  const newSchedule = await createClubSchedule(Number(clubId), scheduleData);
-  return newSchedule;
-};
-
-export const deleteClubScheduleService = async (clubScheduleId) => {
-  await deleteClubScheduleById(Number(clubScheduleId));
-};
-
-export const updateClubScheduleService = async (
-  clubId,
-  clubScheduleId,
-  scheduleData
-) => {
-  const updated = await updateClubScheduleById(
-    Number(clubId),
-    Number(clubScheduleId),
-    scheduleData
-  );
-  return updated;
+  deleteClubScheduleService: async (clubScheduleId) => {
+    await deleteClubScheduleById(Number(clubScheduleId));
+  },
 };

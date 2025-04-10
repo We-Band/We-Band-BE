@@ -18,7 +18,7 @@ export const userScheduleService = {
 
     //보낼 정보 생성
     const userSchedules = await userScheduleRepository.getUserSchedulesByWeek(
-      userId,
+      Number(userId),
       startDate,
       endDate
     );
@@ -107,6 +107,6 @@ export const userScheduleService = {
   },
 
   deleteUserSchedule: async ({ userScheduleId }) => {
-    return await userScheduleRepository.deleteUserSchedule(userScheduleId);
+    await userScheduleRepository.deleteUserSchedule(userScheduleId);
   },
 };
