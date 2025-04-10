@@ -74,7 +74,29 @@ export const teamScheduleService = {
     };
   },
 
-  teamClubSchedule: async ({ teamId, dto }) => {
+  addTeamSchedule: async ({ teamId, dto }) => {
+    const {
+      teamScheduleStart,
+      teamScheduleEnd,
+      teamScheduleTitle,
+      teamSchedulePlace,
+      teamParticipants,
+    } = dto;
+
+    const userIds = await teamScheduleRepository.getTeamMemberUserIds(teamId);
+    const userScheduleData = userIds.map((userId) => ({
+      user_id: userId,
+      user_schedule_start: new Date(teamScheduleStart),
+      user_schedule_end: new Date(teamScheduleEnd),
+      user_schedule_title: teamScheduleTitle,
+      user_schedule_place: teamSchedulePlace || "",
+      user_schedule_participants: teamParticipants || "",
+      is_public: true,
+    }));
+
+    logger.debug("사용자 일정 데이터 생성 완료");
+    await teamScheduleRepository.createUserSchedule(userScheduleData);
+
     return await teamScheduleRepository.createTeamSchedule({
       team_id: Number(teamId),
       ...dto,

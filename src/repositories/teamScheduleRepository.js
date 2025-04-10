@@ -41,8 +41,12 @@ export const teamScheduleRepository = {
     return await prisma.teamSchedule.create({ data: scheduleData });
   },
 
+  createUserSchedule: async (userScheduleData) => {
+    await tx.userSchedule.createMany({ data: userScheduleData });
+  },
+
   deleteTeamScheduleById: async (temaScheduleId) => {
-    return prisma.teamSchedule.delete({
+    await prisma.teamSchedule.delete({
       where: { team_schedule_id: Number(temaScheduleId) },
     });
   },
@@ -54,7 +58,7 @@ export const teamScheduleRepository = {
     });
   },
 
-  getTeamMemberUserIds: async (teamId) => {
+  getTeamMembserUserIds: async (teamId) => {
     return await prisma.teamMember.findMany({
       where: { team_id: Number(teamId) },
       select: { user_id: true },

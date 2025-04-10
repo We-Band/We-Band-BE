@@ -13,7 +13,7 @@ import {
   deleteTeamSchedule,
   modifyTeamSchedule,
   adjustSchedule,
-} from "../controllers/teamSchedule/teamScheduleControllers.js";
+} from "../controllers/teamScheduleControllers.js";
 
 const router = express.Router({ mergeParams: true });
 //동아리 일정 관련 라우터

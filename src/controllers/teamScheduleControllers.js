@@ -30,12 +30,12 @@ export const viewDetailTeamSchedule = async (req, res) => {
   }
 };
 
-export const addTemaSchedule = async (req, res) => {
+export const addTeamSchedule = async (req, res) => {
   try {
     const { clubId, teamId } = req.params;
     const dto = new teamScheduleDto(req.body);
 
-    const result = await teamScheduleService.createTeamSchedule(teamId, dto);
+    const result = await teamScheduleService.addTeamSchedule(teamId, dto);
     logger.debug("팀 일정이 추가 됐습니다.");
     res.status(201).json(result);
   } catch (error) {
@@ -83,6 +83,8 @@ export const adjustSchedule = async (req, res) => {
       teamId,
       day,
     });
+
+    logger.debug("팀 일정 조율을 성공했습니다.");
     return res.json(result);
   } catch (error) {
     logger.error("팀 일정 조정 중 오류 발생:", error);
