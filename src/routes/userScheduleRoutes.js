@@ -11,8 +11,8 @@ import {
   viewDetailUserSchedule,
   addUserSchedule,
   deleteUserSchedule,
-  modifyUserSchedule,
-} from "../controllers/userSchedule/userScheduleControllers.js";
+  updateUserSchedule,
+} from "../controllers/userScheduleControllers.js";
 
 const router = express.Router({ mergeParams: true });
 
@@ -45,7 +45,7 @@ router.patch(
   verifyUserSchedule,
   isMissingUserSchedule,
   isConflictUserSchedule,
-  modifyUserSchedule
+  updateUserSchedule
 ); //일정 수정
 
 export default router;

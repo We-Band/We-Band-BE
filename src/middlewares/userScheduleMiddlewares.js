@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { logger } from "../utils/logger.js";
+import { userScheduleRepository } from "../repositories/userScheduleRepository.js";
 
 const prisma = new PrismaClient();
 
@@ -30,11 +31,9 @@ export const verifyUserSchedule = async (req, res, next) => {
   try {
     const { userId, userScheduleId } = req.params;
 
-    const userSchedule = await prisma.userSchedule.findUnique({
-      where: {
-        user_schedule_id: Number(userScheduleId),
-      },
-    });
+    const userSchedule = await userScheduleRepository.getUserScheduleById(
+      userScheduleId
+    );
 
     if (!userSchedule) {
       logger.info("사용자 일정이 존재하지 않음", { userScheduleId });
