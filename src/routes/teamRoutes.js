@@ -2,12 +2,7 @@ import express from "express";
 import multer from "multer";
 import { authMiddleware } from "../middlewares/authMiddlewares.js";
 import { verifyClub } from "../middlewares/clubMiddlewares.js";
-import {
-  verifyTeam,
-  isTeamLeader,
-  isMyTeam,
-  isUserJoinedTeam,
-} from "../middlewares/teamMiddlewares.js";
+import { verifyTeam, isTeamLeader } from "../middlewares/teamMiddlewares.js";
 import {
   getTeam,
   viewTeam,
@@ -66,14 +61,8 @@ router.post("/:teamId/add-member", verifyTeam, isTeamLeader, addTeamMembers); //
 
 router.delete("/:teamId/delete", verifyTeam, isTeamLeader, deleteTeam); // 팀 삭제
 
-router.delete(
-  "/:teamId/kick-member",
-  verifyTeam,
-  isUserJoinedTeam,
-  isTeamLeader,
-  kickTeamMember
-); // 팀원 삭제
+router.delete("/:teamId/kick-member", verifyTeam, isTeamLeader, kickTeamMember); // 팀원 삭제
 
-router.delete("/:teamId/leave", verifyTeam, isMyTeam, leaveTeam); // 팀 탈퇴
+router.delete("/:teamId/leave", verifyTeam, leaveTeam); // 팀 탈퇴
 
 export default router;
