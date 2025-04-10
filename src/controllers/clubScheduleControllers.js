@@ -27,7 +27,7 @@ export const viewDetailClubSchedule = async (req, res) => {
   } catch (error) {
     logger.error(`동아리 일정 정보 조회 중 오류 발생: ${error.message}`, error);
     res
-      .status(400)
+      .status(500)
       .json({ message: "동아리 일정 정보 조회 중 오류가 발생했습니다." });
   }
 };
