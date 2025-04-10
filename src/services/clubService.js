@@ -1,4 +1,4 @@
-import { ClubRepository } from "../repositories/club.repository.js";
+import { ClubRepository } from "../repositories/clubRepository.js";
 import { logger } from "../utils/logger.js";
 
 export const ClubService = {

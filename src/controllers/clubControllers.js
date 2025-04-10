@@ -1,4 +1,4 @@
-import { ClubService } from "../services/club.service.js";
+import { ClubService } from "../services/clubService.js";
 import {
   JoinClubDTO,
   ChangeCodeDTO,

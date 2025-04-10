@@ -4,7 +4,7 @@ import {
   createClubSchedule,
   deleteClubScheduleById,
   updateClubScheduleById,
-} from "../repository/clubSchedule.repository.js";
+} from "../repository/clubScheduleRepository.js";
 
 import { encodeBase91 } from "../../utils/base91.js";
 

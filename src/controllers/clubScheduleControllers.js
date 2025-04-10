@@ -4,7 +4,7 @@ import {
   createClubScheduleService,
   deleteClubScheduleService,
   updateClubScheduleService,
-} from "../service/clubSchedule.service.js";
+} from "../service/clubScheduleService.js";
 import { logger } from "../../utils/logger.js";
 
 export const viewClubSchedule = async (req, res) => {
