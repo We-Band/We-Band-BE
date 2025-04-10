@@ -1,12 +1,14 @@
-export class CreateTeamDTO {
-  constructor({ teamName, members }) {
+export class createTeamDTO {
+  constructor({ teamName, members, clubId }) {
     this.teamName = teamName;
     this.members = members;
+    this.clubId = clubId;
   }
 }
 
-export class UpdateTeamDTO {
-  constructor({ teamName }) {
-    this.teamName = teamName;
+export class teamProfileDTO {
+  constructor({ teamId, teamImg }) {
+    this.teamId = teamId;
+    this.teamImg = teamImg;
   }
 }

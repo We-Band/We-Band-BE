@@ -2,7 +2,11 @@ import express from "express";
 import multer from "multer";
 import { authMiddleware } from "../middlewares/authMiddlewares.js";
 import { verifyClub } from "../middlewares/clubMiddlewares.js";
-import { verifyTeam, isTeamLeader } from "../middlewares/teamMiddlewares.js";
+import {
+  verifyTeam,
+  isTeamLeader,
+  isTeamMember,
+} from "../middlewares/teamMiddlewares.js";
 import {
   getTeam,
   viewTeam,
@@ -15,7 +19,7 @@ import {
   kickTeamMember,
   leaveTeam,
   changeTeamLeader,
-} from "../controllers/team/teamControllers.js";
+} from "../controllers/teamControllers.js";
 
 const router = express.Router({ mergeParams: true }); // mergeParams 추가
 
@@ -43,7 +47,7 @@ router.get("/:teamId", verifyTeam, viewTeam); //팀 정보 조회
 
 router.get("/member-list", verifyClub, viewMemberList); //동아리 회원 목록 조회
 
-router.post("/", createTeam); // 팀생성
+router.post("/", verifyClub, createTeam); // 팀생성
 
 router.patch(
   "/:teamId/profile",
@@ -61,8 +65,14 @@ router.post("/:teamId/add-member", verifyTeam, isTeamLeader, addTeamMembers); //
 
 router.delete("/:teamId/delete", verifyTeam, isTeamLeader, deleteTeam); // 팀 삭제
 
-router.delete("/:teamId/kick-member", verifyTeam, isTeamLeader, kickTeamMember); // 팀원 삭제
+router.delete(
+  "/:teamId/kick-member",
+  verifyTeam,
+  isTeamLeader,
+  isTeamMember,
+  kickTeamMember
+); // 팀원 삭제
 
-router.delete("/:teamId/leave", verifyTeam, leaveTeam); // 팀 탈퇴
+router.delete("/:teamId/leave", verifyTeam, isTeamMember, leaveTeam); // 팀 탈퇴
 
 export default router;

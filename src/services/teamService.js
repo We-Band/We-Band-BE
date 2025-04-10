@@ -3,12 +3,6 @@ import { logger } from "../utils/logger.js";
 import { PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { s3Client } from "../config/s3config.js"; // R2 클라이언트 설정
 import { teamRepository } from "../repositories/teamRepository.js";
-import {
-  addTeamMembers,
-  changeTeamLeader,
-  deleteTeam,
-  kickTeamMember,
-} from "../controllers/teamControllers.js";
 
 const prisma = new PrismaClient();
 
@@ -21,22 +15,25 @@ export const teamService = {
       teams = await teamRepository.getAllTeams(clubId);
     }
     logger.debug("팀 목록 조회 성공", { clubId, type, teams });
-    return { status: 200, body: teams };
+    return { teams };
   },
 
   viewTeam: async ({ teamId }) => {
-    const team = await teamRepository.getTeamById(teamId);
-    if (!team) throw { status: 404, message: "팀을 찾을 수 없습니다." };
+    const team = {
+      teamId: team.team_id,
+      creator: team.team_leader,
+      teamName: team.team_name,
+    };
+    const members = await teamRepository.getTeamMembers(teamId);
     logger.debug("팀 조회 성공", { teamId, team });
-    return { status: 200, body: team };
+    return { team, members };
   },
 
   viewMemberList: async ({ clubId }) => {
     const members = await teamRepository.getMemberList(clubId);
-    if (!members)
-      throw { status: 404, message: "회원 목록을 찾을 수 없습니다." };
+    if (!members) throw { message: "회원 목록을 찾을 수 없습니다." };
     logger.debug("회원 목록 조회 성공", { clubId, members });
-    return { status: 200, body: members };
+    return { members };
   },
 
   createTeam: async ({ clubId, teamName, members }) => {
@@ -67,22 +64,22 @@ export const teamService = {
       profileImageUrl,
       clubId
     );
-    await addTeamMembers(createdTeam.team_id, members);
-
-    return { message: "팀이 성공적으로 생성되었습니다." };
+    await teamRepository.addTeamMembers(createdTeam.team_id, members);
+    logger.debug("팀 생성 성공", { clubId, teamName, members });
   },
 
-  changeTeamProfile: async ({ teamId }) => {
+  changeTeamProfile: async ({ teamId, teamImg }) => {
     const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
     const bucketName = process.env.R2_BUCKET_NAME;
 
     let profileImageUrl;
-    if (!req.file) {
+    if (!teamImg) {
       profileImageUrl = `https://${bucketName}.${process.env.R2_PUBLIC_DOMAIN}/profile/default/default-image.jpg`;
+      //기본 이미지 추후에 버킷에 업로드하고 설정할 예정
     } else {
       const extractKeyFromUrl = (url) => new URL(url).pathname.slice(1);
-      if (team.profile_img) {
-        const oldKey = extractKeyFromUrl(team.profile_img);
+      if (team.team_img) {
+        const oldKey = extractKeyFromUrl(team.team_img);
         await s3Client.send(
           new DeleteObjectCommand({ Bucket: bucketName, Key: oldKey })
         );
@@ -99,42 +96,35 @@ export const teamService = {
       profileImageUrl = `https://${bucketName}.${accountId}.r2.cloudflarestorage.com/${key}`;
     }
 
-    await updateTeamProfileImage(teamId, profileImageUrl);
-    return {
-      message: "팀 이미지가 성공적으로 업데이트되었습니다.",
-      profile_img: profileImageUrl,
-    };
+    await teamRepository.updateTeamProfileImage(teamId, profileImageUrl);
   },
 
   changeTeamName: async ({ teamId, teamName }) => {
-    await updateTeamName(teamId, teamName);
-    return { message: "팀 이름이 성공적으로 변경되었습니다." };
+    await teamRepository.updateTeamName(teamId, teamName);
   },
 
   addTeamMembers: async ({ teamId, members }) => {
-    await addTeamMembers(teamId, members);
-    return { message: "팀원이 성공적으로 추가되었습니다." };
+    await teamRepository.addTeamMembers(teamId, members);
   },
 
   deleteTeam: async ({ teamId }) => {
     await teamRepository.deleteTeam(teamId);
-    return { message: "팀이 성공적으로 삭제되었습니다." };
   },
 
   kickTeamMember: async ({ teamId, userId }) => {
-    const teamMember = await kickTeamMember(teamId, userId);
+    const teamMember = await teamRepository.kickTeamMember(teamId, userId);
     if (!teamMember) throw { status: 404, message: "팀원을 찾을 수 없습니다." };
-    return { message: "팀원이 성공적으로 제거되었습니다." };
   },
 
   leaveTeam: async ({ teamId }) => {
-    const teamMember = await kickTeamMember(teamId, req.user.user_id);
+    const teamMember = await teamRepository.kickTeamMember(
+      teamId,
+      req.user.user_id
+    );
     if (!teamMember) throw { status: 404, message: "팀원을 찾을 수 없습니다." };
-    return { message: "팀을 성공적으로 탈퇴했습니다." };
   },
 
-  changeTeamLeader: async ({ teamId, newLeaderId }) => {
-    await changeTeamLeader(teamId, newLeaderId);
-    return { message: "팀장이 성공적으로 변경되었습니다." };
+  changeTeamLeader: async ({ teamId, newLeader }) => {
+    await teamRepository.changeTeamLeader(teamId, newLeader);
   },
 };

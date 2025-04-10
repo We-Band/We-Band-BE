@@ -1,13 +1,4 @@
-import { get } from "http";
 import { prisma } from "../config/prismaClient.js";
-import {
-  addTeamMembers,
-  changeTeamLeader,
-  deleteTeam,
-  getTeam,
-  kickTeamMember,
-} from "../controllers/teamControllers.js";
-import { create } from "domain";
 
 export const teamRepository = {
   getMyTeams: async (clubId, userId) => {
@@ -52,6 +43,26 @@ export const teamRepository = {
         team_name: true,
         club_id: true,
         team_leader: true,
+      },
+    });
+  },
+
+  getTeamMembers: async (teamId) => {
+    return prisma.teamMember.findMany({
+      where: {
+        team_id: Number(teamId),
+      },
+      orderBy: {
+        created_at: "desc",
+      },
+      select: {
+        user: {
+          select: {
+            user_id: true,
+            user_name: true,
+            profile_image: true,
+          },
+        },
       },
     });
   },
@@ -142,6 +153,15 @@ export const teamRepository = {
     return prisma.team.update({
       where: { team_id: Number(teamId) },
       data: { team_leader: Number(newLeaderId) },
+    });
+  },
+
+  isTeamMember: async (targetUserId, teamId) => {
+    return prisma.team.findFirst({
+      where: {
+        team_id: Number(teamId),
+        user_id: Number(targetUserId),
+      },
     });
   },
 };

@@ -2,7 +2,7 @@ import {
   getUserService,
   updateImageService,
   updateNameService,
-} from "../service/userService.js";
+} from "../services/userService.js";
 
 export const getCurrentUser = async (req, res) => {
   const result = await getUserService(req.user.user_id);

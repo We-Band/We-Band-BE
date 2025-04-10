@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { logger } from "../utils/logger.js";
+import { get } from "http";
 
 const prisma = new PrismaClient();
 
@@ -9,9 +10,7 @@ export const verifyClub = async (req, res, next) => {
     const { clubId } = req.params;
 
     //동아리 존재 여부 검증
-    const club = await prisma.club.findUnique({
-      where: { club_id: Number(clubId) },
-    });
+    const club = getClubById(clubId);
 
     if (!club) {
       logger.debug(`존재하지 않는 동아리 입니다 ${clubId}`);
@@ -20,6 +19,7 @@ export const verifyClub = async (req, res, next) => {
 
     ///club객체를 생성해서 다음 미들웨어, 컨트롤러로 보냄
     req.club = club;
+
     logger.debug(`동아리 존재 여부 검증 완료, ${clubId}`);
     next();
   } catch (error) {

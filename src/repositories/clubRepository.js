@@ -2,6 +2,18 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 export const ClubRepository = {
+  getClubById: async (clubId) =>
+    await prisma.club.findUnique({
+      where: { club_id: Number(clubId) },
+      select: {
+        club_id: true,
+        club_name: true,
+        club_code: true,
+        club_leader: true,
+        member_count: true,
+      },
+    }),
+
   findByCode: async (code) =>
     await prisma.club.findUnique({
       where: { club_code: code },

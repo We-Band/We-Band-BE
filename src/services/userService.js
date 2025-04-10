@@ -2,7 +2,7 @@ import {
   getUserById,
   updateProfileImgById,
   updateUsernameById,
-} from "../repository/userRepository.js";
+} from "../repositories/userRepository.js";
 import { serializeUserDto } from "../dto/userDto.js";
 import { s3Client } from "../config/s3config.js";
 import { PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
