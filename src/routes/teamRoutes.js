@@ -5,8 +5,7 @@ import { verifyClub } from "../middlewares/clubMiddlewares.js";
 import {
   verifyTeam,
   isTeamLeader,
-  isMyTeam,
-  isUserJoinedTeam,
+  isTeamMember,
 } from "../middlewares/teamMiddlewares.js";
 import {
   getTeam,
@@ -48,7 +47,7 @@ router.get("/:teamId", verifyTeam, viewTeam); //팀 정보 조회
 
 router.get("/member-list", verifyClub, viewMemberList); //동아리 회원 목록 조회
 
-router.post("/", createTeam); // 팀생성
+router.post("/", verifyClub, createTeam); // 팀생성
 
 router.patch(
   "/:teamId/profile",
@@ -69,11 +68,11 @@ router.delete("/:teamId/delete", verifyTeam, isTeamLeader, deleteTeam); // 팀 �
 router.delete(
   "/:teamId/kick-member",
   verifyTeam,
-  isUserJoinedTeam,
   isTeamLeader,
+  isTeamMember,
   kickTeamMember
 ); // 팀원 삭제
 
-router.delete("/:teamId/leave", verifyTeam, isMyTeam, leaveTeam); // 팀 탈퇴
+router.delete("/:teamId/leave", verifyTeam, isTeamMember, leaveTeam); // 팀 탈퇴
 
 export default router;

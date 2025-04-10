@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { logger } from "../utils/logger.js";
-
+import { teamService } from "../services/teamService.js";
+import { teamRepository } from "../repositories/teamRepository.js";
 const prisma = new PrismaClient();
 
 // 동아리 팀 존재 여부 검증 미들웨어
@@ -8,12 +9,7 @@ export const verifyTeam = async (req, res, next) => {
   try {
     const { clubId, teamId } = req.params;
 
-    const team = await prisma.team.findFirst({
-      where: {
-        club_id: Number(clubId),
-        team_id: Number(teamId),
-      },
-    });
+    const team = teamRepository.getTeamById(teamId);
 
     if (!team) {
       logger.debug(`존재하지 않는 팀 입니다 ${teamId}`);
@@ -59,62 +55,33 @@ export const isTeamLeader = async (req, res, next) => {
   }
 };
 
-// 팀원 여부 검증 미들웨어
-export const isMyTeam = async (req, res, next) => {
+export const isTeamMember = async (req, res, next) => {
   try {
     const { clubId, teamId } = req.params;
-    const userId = req.user.user_id;
+    const userIdFromBody = req.body;
+    const userIdFromToken = req.user.user_id;
+    const route = req.route.path;
 
-    //clubMember 테이블에서 동아리 가입여부 검증
-    const teamMember = await prisma.teamMember.findFirst({
-      where: {
-        team_id: Number(teamId),
-        user_id: Number(userId),
-      },
-    });
-
-    if (!teamMember) {
-      logger.debug("팀에 가입되지 않은 사용자 입니다.");
-      return res
-        .status(409)
-        .json({ message: "동아리에 가입되지 않은 사용자입니다." });
+    let targetUserId;
+    if (route.includes("kick-member")) {
+      targetUserId = userIdFromBody;
+    } else if (route.includes("leave")) {
+      targetUserId = userIdFromToken;
+    } else {
+      return res.status(400).json({ message: "지원하지 않는 요청입니다." });
     }
 
-    req.teamMember = teamMember;
-
-    logger.debug("팀 가입 여부 검증 완료");
-    next();
-  } catch (error) {
-    logger.error(`동아리 가입 여부 검증 실패${error.message}`, { error });
-    return res.status(500).json({ message: "서버 오류 발생" });
-  }
-};
-
-//팀 가입 여부 검증 미들웨어
-export const isUserJoinedTeam = async (req, res, next) => {
-  try {
-    const { clubId, teamId } = req.params;
-    const { userId } = req.body;
-
-    //clubMember 테이블에서 동아리 가입여부 검증
-    const teamMember = await prisma.teamMember.findFirst({
-      where: {
-        team_id: Number(teamId),
-        user_id: Number(userId),
-      },
+    const isTeamMember = await teamRepository.isTeamMember({
+      targetUserId,
+      teamId,
     });
-
-    if (!teamMember) {
-      logger.debug("팀에 가입하지 않은 사용자 입니다.");
-      return res
-        .status(409)
-        .json({ message: "팀에 가입되지 않은 사용자입니다." });
+    if (isTeamMember) {
+      logger.debug("팀원 검증 완료");
+    } else {
+      logger.debug("팀에 속한 유저가 아닙니다.");
     }
-
-    logger.debug("가입 여부 검증 완료");
-    next();
   } catch (error) {
-    logger.error(`팀 가입 여부 검증 실패${error.message}`, { error });
-    return res.status(500).json({ message: "서버 오류 발생" });
+    logger.error(`팀원 검증 과정 중 실패 ${error.message}`, { error });
+    return res.status(500).json({ messae: "서버 오류 발생" });
   }
 };

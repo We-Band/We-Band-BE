@@ -6,7 +6,6 @@ import {
   updateUsername,
 } from "../controllers/userControllers.js";
 import { authMiddleware } from "../middlewares/authMiddlewares.js";
-import {} from "../controllers/userControllers.js";
 
 const router = express.Router();
 
