@@ -4,7 +4,7 @@ import {
   getCurrentUser,
   updateProfileImage,
   updateUsername,
-} from "../controllers/user/userControllers.js";
+} from "../controllers/userControllers.js";
 import { authMiddleware } from "../middlewares/authMiddlewares.js";
 
 const router = express.Router();

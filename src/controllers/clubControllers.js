@@ -53,7 +53,7 @@ export const changeCode = async (req, res) => {
 
     await ClubService.changeCode(clubId, newCode);
     return res.status(200).json(result);
-  } catch (err) {
+  } catch (error) {
     logger.error(`동아리 가입 코드 변경 중 오류 발생 ${error.message}`, {
       error,
     });
@@ -88,7 +88,7 @@ export const viewClub = async (req, res) => {
 
     logger.debug("동아리 정보 조회 성공");
     return res.status(200).json({ clubInfo, members });
-  } catch (err) {
+  } catch (error) {
     logger.error(`팀 목록 조회 검증 실패: ${error.message}`, { error });
     return res
       .status(500)
