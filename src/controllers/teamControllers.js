@@ -1,10 +1,5 @@
 import { PrismaClient } from "@prisma/client";
 import { logger } from "../utils/logger.js";
-import {
-  createTeamDTO,
-  updateTeamDTO,
-  teamProfileDTO,
-} from "../dtos/teamDto.js";
 import { teamService } from "../services/teamService.js";
 
 const prisma = new PrismaClient();
@@ -76,13 +71,10 @@ export const viewMemberList = async (req, res) => {
 // 팀 생성 API (POST /clubs/:clubId/teams)
 export const createTeam = async (req, res) => {
   try {
-    const dto = new createTeamDTO({
-      teamName: req.body.teamName,
-      members: req.body.members,
-      clubId: Number(req.params.clubId),
-    });
+    const { clubId } = req.params;
+    const { teamName, members } = req.body;
 
-    await teamService.createTeam(dto);
+    await teamService.createTeam(clubId, teamName, members);
 
     return res.status(201).json({ message: "팀이 성공적으로 생성되었습니다." });
   } catch (error) {
@@ -95,18 +87,16 @@ export const createTeam = async (req, res) => {
 // 팀 이미지 변경 API (PUT /clubs/:clubId/teams/:teamId/profile)
 export const changeTeamProfile = async (req, res) => {
   try {
-    const dto = new teamProfileDTO({
-      teamImg: req.file ? req.file : null,
-      teamId: Number(req.params.teamId),
-    });
+    const teamImg = req.file ? req.file : null;
+    const { clubId, teamId } = req.params;
 
-    await teamService.changeTeamProfile(dto);
+    await teamService.changeTeamProfile(teamImg, teamId);
 
     res
       .status(200)
       .json({ message: "팀 이미지가 성공적으로 업데이트되었습니다." });
   } catch (error) {
-    logger.error("팀 이미지 변경 실패:", error);
+    logger.error("팀 이미지 변경 실패:", errosr);
     res.status(500).json({ message: "팀 이미지를 변경 중 서버 오류 발생" });
   }
 };
