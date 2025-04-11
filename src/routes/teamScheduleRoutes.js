@@ -11,7 +11,7 @@ import {
   viewDetailTeamSchedule,
   addTeamSchedule,
   deleteTeamSchedule,
-  modifyTeamSchedule,
+  updateTeamSchedule,
   adjustSchedule,
 } from "../controllers/teamScheduleControllers.js";
 
@@ -45,7 +45,7 @@ router.patch(
   verifyTeamSchedule,
   isMissingTeamSchedule,
   isConflictSchedule,
-  modifyTeamSchedule
+  updateTeamSchedule
 ); //팀 일정 수정
 
 router.get("/adjustment", isTeamMember, adjustSchedule); //팀일정 조율

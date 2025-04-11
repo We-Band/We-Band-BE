@@ -1,8 +1,8 @@
 import { teamScheduleService } from "../services/teamScheduleService.js";
-import { logger } from "../../utils/logger.js";
+import { logger } from "../utils/logger.js";
 import { teamScheduleDto } from "../dtos/teamScheduleDto.js";
 
-export const viewClubSchedule = async (req, res) => {
+export const viewTeamSchedule = async (req, res) => {
   try {
     const { clubId, teamId } = req.params;
     const { day } = req.query;
@@ -57,7 +57,7 @@ export const deleteTeamSchedule = async (req, res) => {
   }
 };
 
-export const updateteamSchedule = async (req, res) => {
+export const updateTeamSchedule = async (req, res) => {
   try {
     const { clubId, teamId, teamScheduleId } = req.params;
     const dto = new teamScheduleDto(req.body);

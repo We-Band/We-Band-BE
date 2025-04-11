@@ -1,4 +1,6 @@
-import { prisma } from "../config/prismaClient.js";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 export const teamRepository = {
   getMyTeams: async (clubId, userId) => {

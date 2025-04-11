@@ -1,5 +1,5 @@
 import { teamScheduleRepository } from "../repositories/teamScheduleRepository.js";
-import { encodeBase91 } from "../../utils/base91.js";
+import { encodeBase91 } from "../utils/base91.js";
 import { logger } from "../utils/logger.js";
 
 // 주간 일정 조회
