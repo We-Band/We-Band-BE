@@ -1,4 +1,4 @@
-export class userScheduleDto {
+export class teamScheduleDto {
   constructor(body) {
     this.teamScheduleStart = new Date(body.teamScheduleStart);
     this.teamScheduleEnd = new Date(body.teamScheduleEnd);

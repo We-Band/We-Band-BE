@@ -37,7 +37,6 @@ export const teamService = {
   },
 
   createTeam: async ({ clubId, teamName, members }) => {
-    const { teamName, members } = dto;
     const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
     const bucketName = process.env.R2_BUCKET_NAME;
 

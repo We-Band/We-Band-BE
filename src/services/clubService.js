@@ -1,26 +1,26 @@
-import { ClubRepository } from "../repositories/clubRepository.js";
+import { clubRepository } from "../repositories/clubRepository.js";
 import { logger } from "../utils/logger.js";
 
 export const ClubService = {
   joinClub: async ({ clubCode, userId }) => {
-    const club = await ClubRepository.findByCode(clubCode);
+    const club = await clubRepository.findByCode(clubCode);
     if (!club) throw { status: 404, message: "잘못된 동아리 코드입력" };
 
     const clubId = club.club_id;
-    const isAlreadyMember = await ClubRepository.isMember(clubId, userId);
+    const isAlreadyMember = await clubRepository.isMember(clubId, userId);
     if (isAlreadyMember) {
       throw { status: 409, message: "이미 가입된 동아리입니다." };
     }
 
-    await ClubRepository.addMember(clubId, userId);
-    await ClubRepository.incrementMemberCount(clubId);
+    await clubRepository.addMember(clubId, userId);
+    await clubRepository.incrementMemberCount(clubId);
 
     logger.info(`사용자 ${userId}가 동아리 ${clubId}에 가입함`);
   },
 
   quitClub: async ({ clubId, userId }) => {
-    await ClubRepository.removeMember(clubId, userId);
-    await ClubRepository.decrementMemberCount(clubId);
+    await clubRepository.removeMember(clubId, userId);
+    await clubRepository.decrementMemberCount(clubId);
     logger.info(`사용자 ${userId}가 동아리 ${clubId}에서 탈퇴함`);
   },
 
@@ -28,22 +28,22 @@ export const ClubService = {
     if (userId === myId)
       throw { status: 405, message: "회장은 퇴출 불가능합니다." };
 
-    await ClubRepository.removeMember(clubId, userId);
+    await clubRepository.removeMember(clubId, userId);
     logger.info(`사용자 ${userId}를 동아리 ${clubId}에서 추방함`);
   },
 
   changeCode: async ({ clubId, newCode }) => {
-    await ClubRepository.updateCode(clubId, newCode);
+    await clubRepository.updateCode(clubId, newCode);
     logger.info(`동아리 ${clubId}의 가입 코드 변경됨`);
   },
 
   changeLeader: async ({ clubId, newLeader }) => {
-    await ClubRepository.updateLeader(clubId, newLeader);
+    await clubRepository.updateLeader(clubId, newLeader);
     logger.info(`동아리 ${clubId}의 회장이 ${newLeader}로 변경됨`);
   },
 
   getClubMembers: async ({ clubId, club }) => {
-    const membersRaw = await ClubRepository.getMembers(clubId);
+    const membersRaw = await clubRepository.getMembers(clubId);
     logger.debug(`동아리 회원 조회 성공 ${clubId}`);
 
     const members = membersRaw.map((m) => ({

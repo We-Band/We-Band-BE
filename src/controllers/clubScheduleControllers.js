@@ -1,5 +1,5 @@
 import { clubScheduleService } from "../services/clubScheduleService.js";
-import { logger } from "../../utils/logger.js";
+import { logger } from "../utils/logger.js";
 import { clubScheduleDto } from "../dtos/clubScheduleDto.js";
 
 export const viewClubSchedule = async (req, res) => {
