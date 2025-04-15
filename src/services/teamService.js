@@ -42,7 +42,7 @@ export const teamService = {
 
     let profileImageUrl;
     if (!req.file) {
-      profileImageUrl = `https://${bucketName}.${accountId}.r2.cloudflarestorage.com`;
+      profileImageUrl = `https://we-band.534b5de33d3d2ad79d00087224cf4d73.r2.cloudflarestorage.com/default-profile/1744607107947`;
     } else {
       const key = `profile/custom/${req.user.userID}/${
         req.user.userID

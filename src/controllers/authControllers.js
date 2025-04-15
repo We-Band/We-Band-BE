@@ -112,7 +112,8 @@ export const handleKakaoUser = async (req, res) => {
           kakao_id: BigInt(kakaoId),
           email,
           user_name: userName,
-          profile_img,
+          profile_img:
+            "https://we-band.534b5de33d3d2ad79d00087224cf4d73.r2.cloudflarestorage.com/default-profile/1744607107947",
         },
       });
       logger.info(`새로운 사용자 생성: ${email}`);
