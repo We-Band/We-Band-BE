@@ -7,7 +7,7 @@ export const joinClub = async (req, res) => {
     const { clubCode } = req.body;
     const userId = req.user.user_id;
 
-    await ClubService.joinClub(clubCode, userId);
+    await ClubService.joinClub({ clubCode, userId });
     logger.debug("동아리 가입 성공");
     return res
       .status(200)
@@ -20,9 +20,10 @@ export const joinClub = async (req, res) => {
 
 export const quitClub = async (req, res) => {
   try {
-    const { clubId } = req.params;
+    let { clubId } = req.params;
+    clubId = Number(clubId);
     const userId = req.user.user_id;
-    await ClubService.quitClub(clubId, userId);
+    await ClubService.quitClub({ clubId, userId });
 
     logger.debug("동아리 탈퇴를 성공했습니다.");
     return res.status(200).json({ message: "동아리 탈퇴를 성공했습니다." });
@@ -34,11 +35,12 @@ export const quitClub = async (req, res) => {
 
 export const kickMember = async (req, res) => {
   try {
-    const { clubId } = req.params;
-    const { userId } = req.body;
+    let { clubId } = req.params;
+    clubId = Number(clubId);
+    const { kickUser } = req.body;
     const myId = req.user.user_id;
 
-    await ClubService.kickMember(clubId, userId, myId);
+    await ClubService.kickMember({ clubId, kickUser, myId });
     return res.status(200).json({ message: "회원 강퇴를 성공했습니다." });
   } catch (error) {
     logger.error(`동아리 추방 실패: ${error.message}`, { error });
@@ -81,15 +83,15 @@ export const viewClub = async (req, res) => {
     const { clubId } = req.params;
     const club = req.club;
 
-    const { clubInfo, members } = await ClubService.getClubMembers(
+    const { clubInfo, members } = await ClubService.getClubMembers({
       clubId,
-      club
-    );
+      club,
+    });
 
     logger.debug("동아리 정보 조회 성공");
     return res.status(200).json({ clubInfo, members });
   } catch (error) {
-    logger.error(`팀 목록 조회 검증 실패: ${error.message}`, { error });
+    logger.error(`동아리 목록 조회 검증 실패: ${error.message}`, { error });
     return res
       .status(500)
       .json({ message: "동아리 조회 중 오류가 발생했습니다." });

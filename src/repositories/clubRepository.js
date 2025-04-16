@@ -3,7 +3,7 @@ const prisma = new PrismaClient();
 
 export const clubRepository = {
   getClubById: async (clubId) => {
-    await prisma.club.findUnique({
+    return await prisma.club.findUnique({
       where: { club_id: Number(clubId) },
       select: {
         club_id: true,
@@ -11,19 +11,20 @@ export const clubRepository = {
         club_code: true,
         club_leader: true,
         member_count: true,
+        created_at: true,
       },
     });
   },
 
   findByCode: async (code) => {
-    await prisma.club.findUnique({
+    return await prisma.club.findUnique({
       where: { club_code: code },
       select: { club_id: true },
     });
   },
 
   isMember: async (clubId, userId) => {
-    await prisma.clubMember.findFirst({
+    return await prisma.clubMember.findFirst({
       where: { club_id: clubId, user_id: userId },
     });
   },
@@ -34,9 +35,9 @@ export const clubRepository = {
     });
   },
 
-  removeMember: async (clubId, userId) => {
+  removeMember: async (clubId, kickUser) => {
     await prisma.clubMember.delete({
-      where: { club_id_user_id: { club_id: clubId, user_id: userId } },
+      where: { club_id_user_id: { club_id: clubId, user_id: kickUser } },
     });
   },
 
@@ -69,12 +70,12 @@ export const clubRepository = {
   },
 
   getMembers: async (clubId) => {
-    await prisma.clubMember.findMany({
+    return await prisma.clubMember.findMany({
       where: { club_id: Number(clubId) },
       orderBy: { created_at: "asc" },
       select: {
         user: {
-          select: { user_id: true, user_name: true, profile_image: true },
+          select: { user_id: true, user_name: true, profile_img: true },
         },
       },
     });
