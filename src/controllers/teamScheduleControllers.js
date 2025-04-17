@@ -79,11 +79,7 @@ export const adjustSchedule = async (req, res) => {
     const { clubId, teamId } = req.params;
     const { day } = req.query;
 
-    const result = await teamScheduleService.adjustTeamSchedule({
-      teamId,
-      day,
-    });
-
+    const result = await teamScheduleService.adjustTeamSchedule(teamId, day);
     logger.debug("팀 일정 조율을 성공했습니다.");
     return res.json(result);
   } catch (error) {

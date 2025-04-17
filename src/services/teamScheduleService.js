@@ -74,7 +74,7 @@ export const teamScheduleService = {
     };
   },
 
-  addTeamSchedule: async ({ teamId, dto }) => {
+  addTeamSchedule: async (teamId, dto) => {
     const {
       teamScheduleStart,
       teamScheduleEnd,

@@ -58,7 +58,7 @@ export const teamScheduleRepository = {
     });
   },
 
-  getTeamMembserUserIds: async (teamId) => {
+  getTeamMemberUserIds: async (teamId) => {
     return await prisma.teamMember.findMany({
       where: { team_id: Number(teamId) },
       select: { user_id: true },
