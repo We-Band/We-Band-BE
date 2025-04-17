@@ -31,7 +31,7 @@ export const userScheduleRepository = {
     });
   },
 
-  createUserSchedule: async (scheduleData) => {
+  createUserSchedule: async ({ scheduleData }) => {
     return await prisma.userSchedule.create({ data: scheduleData });
   },
 

@@ -78,7 +78,7 @@ export const userScheduleService = {
     };
   },
 
-  fetchUserScheduleDetail: async ({ myId, userId, userSchedule }) => {
+  fetchUserScheduleDetail: async (myId, userId, userSchedule) => {
     const isVisible = Number(myId) !== Number(userId) && userSchedule.is_public;
 
     return {
@@ -95,18 +95,18 @@ export const userScheduleService = {
     };
   },
 
-  addUserSchedule: async ({ userId, dto }) => {
+  addUserSchedule: async (userId, dto) => {
     return await userScheduleRepository.createUserSchedule({
       user_id: Number(userId),
       ...dto,
     });
   },
 
-  updateUserSchedule: async ({ userScheduleId, dto }) => {
+  updateUserSchedule: async (userScheduleId, dto) => {
     return await userScheduleRepository.updateUserSchedule(userScheduleId, dto);
   },
 
-  deleteUserSchedule: async ({ userScheduleId }) => {
+  deleteUserSchedule: async (userScheduleId) => {
     await userScheduleRepository.deleteUserSchedule(userScheduleId);
   },
 };

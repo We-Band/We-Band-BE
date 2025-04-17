@@ -36,7 +36,7 @@ export const clubScheduleRepository = {
     });
   },
 
-  createClubSchedule: async (scheduleData) => {
+  createClubSchedule: async ({ scheduleData }) => {
     return await prisma.clubSchedule.create({ data: scheduleData });
   },
 
