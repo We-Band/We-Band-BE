@@ -46,7 +46,7 @@ export const clubScheduleRepository = {
     });
   },
 
-  updateUserSchedule: async (clubScheduleId, scheduleData) => {
+  updateClubSchedule: async (clubScheduleId, scheduleData) => {
     return await prisma.clubSchedule.update({
       where: { club_schedule_id: Number(clubScheduleId) },
       data: scheduleData,
