@@ -11,6 +11,7 @@ export const clubRepository = {
         club_code: true,
         club_leader: true,
         member_count: true,
+        created_at: true,
       },
     });
   },
@@ -35,7 +36,7 @@ export const clubRepository = {
   },
 
   removeMember: async (clubId, userId) => {
-    return await prisma.clubMember.delete({
+    await prisma.clubMember.delete({
       where: { club_id_user_id: { club_id: clubId, user_id: userId } },
     });
   },
