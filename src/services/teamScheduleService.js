@@ -84,37 +84,43 @@ export const teamScheduleService = {
     } = dto;
 
     const userIds = await teamScheduleRepository.getTeamMemberUserIds(teamId);
-    const userScheduleData = userIds.map((userId) => ({
-      user_id: userId,
-      user_schedule_start: new Date(teamScheduleStart),
-      user_schedule_end: new Date(teamScheduleEnd),
-      user_schedule_title: teamScheduleTitle,
-      user_schedule_place: teamSchedulePlace || "",
-      user_schedule_participants: teamParticipants || "",
-      is_public: true,
-    }));
+
+    // 각 사용자별로 개별 일정 생성
+    for (const userId of userIds) {
+      await teamScheduleRepository.createUserSchedule({
+        user_id: userId,
+        user_schedule_start: new Date(teamScheduleStart),
+        user_schedule_end: new Date(teamScheduleEnd),
+        user_schedule_title: teamScheduleTitle,
+        user_schedule_place: teamSchedulePlace || "",
+        user_schedule_participants: teamParticipants || "",
+        is_public: true,
+      });
+    }
 
     logger.debug("사용자 일정 데이터 생성 완료");
-    await teamScheduleRepository.createUserSchedule(userScheduleData);
 
     return await teamScheduleRepository.createTeamSchedule({
       team_id: Number(teamId),
-      ...dto,
+      team_schedule_start: new Date(teamScheduleStart),
+      team_schedule_end: new Date(teamScheduleEnd),
+      team_schedule_title: teamScheduleTitle,
+      team_schedule_place: teamSchedulePlace || "",
+      team_schedule_participants: teamParticipants || "",
     });
   },
 
-  updateTeamSchedule: async ({ teamScheduleId, dto }) => {
+  updateTeamSchedule: async (teamScheduleId, dto) => {
     return await teamScheduleRepository.updateTeamSchedule(teamScheduleId, dto);
   },
 
   deleteTeamSchedule: async (teamScheduleId) => {
-    await deleteTeamScheduleById(Number(teamScheduleId));
+    return await teamScheduleRepository.deleteTeamSchedule(teamScheduleId);
   },
 
-  adjustTeamSchedule: async ({ teamId, day }) => {
+  adjustTeamSchedule: async (teamId, day) => {
     // 팀 맴버 user_id 배열로 변환
     const userIds = await teamScheduleRepository.getTeamMemberUserIds(teamId);
-    const userIdsArray = userIds.map((user) => user.user_id);
 
     // 날짜 범위
     const inputDate = new Date(day);
@@ -136,7 +142,7 @@ export const teamScheduleService = {
 
     //사용자 일정 조회
     const userSchedules = await teamScheduleRepository.getUserSchedules(
-      userIdsArray,
+      userIds,
       startDate,
       endDate
     );
@@ -145,7 +151,7 @@ export const teamScheduleService = {
 
     //사용자 이름 조회를 위한 key-value json map
     // user_id를 키로, user_name을 값으로 하는 객체 생성
-    const userNames = await teamScheduleRepository.getUserNames(userIdsArray);
+    const userNames = await teamScheduleRepository.getUserNames(userIds);
     const userNameMap = Object.fromEntries(
       userNames.map((u) => [u.user_id, u.user_name])
     );

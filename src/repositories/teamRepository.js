@@ -4,7 +4,7 @@ const prisma = new PrismaClient();
 
 export const teamRepository = {
   getMyTeams: async (clubId, userId) => {
-    return prisma.teamMember.findMany({
+    return await prisma.teamMember.findMany({
       where: {
         user_id: Number(userId),
         team: {
@@ -24,7 +24,7 @@ export const teamRepository = {
   },
 
   getAllTeams: async (clubId) => {
-    return prisma.team.findMany({
+    return await prisma.team.findMany({
       where: {
         club_id: Number(clubId),
       },
@@ -37,7 +37,7 @@ export const teamRepository = {
   },
 
   getTeamById: async (teamId) => {
-    return prisma.team.findUnique({
+    return await prisma.team.findUnique({
       where: { team_id: Number(teamId) },
       select: {
         team_id: true,
@@ -50,7 +50,7 @@ export const teamRepository = {
   },
 
   getTeamMembers: async (teamId) => {
-    return prisma.teamMember.findMany({
+    return await prisma.teamMember.findMany({
       where: {
         team_id: Number(teamId),
       },
@@ -62,7 +62,7 @@ export const teamRepository = {
           select: {
             user_id: true,
             user_name: true,
-            profile_image: true,
+            profile_img: true,
           },
         },
       },
@@ -70,7 +70,7 @@ export const teamRepository = {
   },
 
   getMemberList: async (clubId) => {
-    return prisma.teamMember.findMany({
+    return await prisma.teamMember.findMany({
       where: {
         club_id: Number(clubId),
       },
@@ -82,84 +82,73 @@ export const teamRepository = {
           select: {
             user_id: true,
             user_name: true,
-            profile_image: true,
+            profile_img: true,
           },
         },
       },
     });
   },
 
-  createTeam: async (teamName, profileImageUrl, clubId) => {
-    return prisma.team.create({
+  createTeam: async (teamName, profileImageUrl, clubId, userId) => {
+    return await prisma.team.create({
       data: {
         team_name: teamName,
         team_img: profileImageUrl,
         club_id: Number(clubId),
-        team_leader: req.user.user_id,
+        team_leader: Number(userId),
       },
     });
   },
 
-  addTeamMembers: async (teamId, members) => {
-    return prisma.teamMember.createMany({
-      data: members.map((member) => ({
-        team_id: teamId,
-        user_id: member.user_id,
-      })),
-    });
-  },
-
-  findTeamById: (teamId) => {
-    return prisma.team.findUnique({ where: { team_id: Number(teamId) } });
-  },
-
   updateTeamProfileImage: async (teamId, profileImageUrl) => {
-    return prisma.team.update({
+    return await prisma.team.update({
       where: { team_id: Number(teamId) },
-      data: { profile_img: profileImageUrl },
+      data: { team_img: profileImageUrl },
     });
   },
 
   updateTeamName: async (teamId, teamName) => {
-    return prisma.team.update({
+    return await prisma.team.update({
       where: { team_id: Number(teamId) },
       data: { team_name: teamName },
     });
   },
 
   addTeamMembers: async (teamId, members) => {
-    return prisma.teamMember.createMany({
-      data: members.map((member) => ({
-        team_id: teamId,
-        user_id: member.user_id,
+    return await prisma.teamMember.createMany({
+      data: members.map((userId) => ({
+        team_id: Number(teamId),
+        user_id: Number(userId),
       })),
     });
   },
 
   deleteTeam: async (teamId) => {
-    return prisma.team.delete({
+    return await prisma.team.delete({
       where: { team_id: Number(teamId) },
     });
   },
 
   kickTeamMember: async (teamId, userId) => {
-    return prisma.teamMember.delete({
+    return await prisma.teamMember.delete({
       where: {
-        team_id: Number(teamId),
-        user_id: Number(userId),
+        team_id_user_id: {
+          team_id: Number(teamId),
+          user_id: Number(userId),
+        },
       },
     });
   },
 
-  changeTeamLeader: async (teamId, newLeaderId) => {
-    return prisma.team.update({
+  changeTeamLeader: async (teamId, newLeader) => {
+    return await prisma.team.update({
       where: { team_id: Number(teamId) },
-      data: { team_leader: Number(newLeaderId) },
+      data: { team_leader: Number(newLeader) },
     });
   },
 
   isTeamMember: async (targetUserId, teamId) => {
-    return prisma.team.findFirst({
+    return prisma.teamMember.findFirst({
       where: {
         team_id: Number(teamId),
         user_id: Number(targetUserId),
