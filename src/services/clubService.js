@@ -24,12 +24,14 @@ export const ClubService = {
     logger.info(`사용자 ${userId}가 동아리 ${clubId}에서 탈퇴함`);
   },
 
-  kickMember: async ({ clubId, userId, myId }) => {
-    if (userId === myId)
+  kickMember: async ({ clubId, kickUser, myId }) => {
+    if (kickUser === myId)
       throw { status: 405, message: "회장은 퇴출 불가능합니다." };
 
-    await clubRepository.removeMember(clubId, userId);
-    logger.info(`사용자 ${userId}를 동아리 ${clubId}에서 추방함`);
+    console.log(kickUser, myId);
+
+    await clubRepository.removeMember(clubId, kickUser);
+    logger.info(`사용자 ${kickUser}를 동아리 ${clubId}에서 추방함`);
   },
 
   changeCode: async ({ clubId, newCode }) => {

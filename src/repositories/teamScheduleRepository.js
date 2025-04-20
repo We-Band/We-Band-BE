@@ -24,14 +24,14 @@ export const teamScheduleRepository = {
     });
   },
 
-  getteamScheduleById: async (teamScheduleId) => {
+  getTeamScheduleById: async (teamScheduleId) => {
     return await prisma.teamSchedule.findUnique({
       where: { team_schedule_id: Number(teamScheduleId) },
       select: {
         team_schedule_title: true,
         team_schedule_start: true,
         team_schedule_end: true,
-        tema_schedule_place: true,
+        team_schedule_place: true,
         team_schedule_participants: true,
       },
     });
@@ -42,12 +42,12 @@ export const teamScheduleRepository = {
   },
 
   createUserSchedule: async (userScheduleData) => {
-    await tx.userSchedule.createMany({ data: userScheduleData });
+    await prisma.userSchedule.createMany({ data: userScheduleData });
   },
 
-  deleteTeamScheduleById: async (temaScheduleId) => {
+  deleteTeamScheduleById: async (teamScheduleId) => {
     await prisma.teamSchedule.delete({
-      where: { team_schedule_id: Number(temaScheduleId) },
+      where: { team_schedule_id: Number(teamScheduleId) },
     });
   },
 
@@ -58,12 +58,13 @@ export const teamScheduleRepository = {
     });
   },
 
-  getTeamMembserUserIds: async (teamId) => {
+  getTeamMemberUserIds: async (teamId) => {
     return await prisma.teamMember.findMany({
       where: { team_id: Number(teamId) },
       select: { user_id: true },
     });
   },
+
   getUserSchedules: async (userIds, startDate, endDate) => {
     return await prisma.userSchedule.findMany({
       where: {

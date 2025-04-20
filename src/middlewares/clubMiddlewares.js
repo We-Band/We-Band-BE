@@ -9,7 +9,7 @@ export const verifyClub = async (req, res, next) => {
     const { clubId } = req.params;
 
     //동아리 존재 여부 검증
-    const club = getClubById(clubId);
+    const club = await clubRepository.getClubById(clubId);
 
     if (!club) {
       logger.debug(`존재하지 않는 동아리 입니다 ${clubId}`);
@@ -51,28 +51,27 @@ export const isLeader = async (req, res, next) => {
 
 export const isClubMember = async (req, res, next) => {
   try {
-    const { clubId } = req.params;
-    const userIdFromBody = req.body;
+    const { clubId } = Number(req.params);
+    const { kickUser } = req.body;
     const userIdFromToken = req.user.user_id;
     const route = req.route.path;
 
     let userId;
     if (route.includes("kick-member")) {
-      userId = userIdFromBody;
+      userId = kickUser;
     } else if (route.includes("leave")) {
       userId = userIdFromToken;
     } else {
       return res.status(400).json({ message: "지원하지 않는 요청입니다." });
     }
 
-    const isClubMember = await clubRepository.isMember({
-      userId,
-      clubId,
-    });
+    const isClubMember = await clubRepository.isMember(clubId, userId);
     if (isClubMember) {
       logger.debug("동아리원 검증 완료");
+      next();
     } else {
       logger.debug("동아리에 속한 유저가 아닙니다.");
+      return res.status(404).json({ message: "잘못된 접근입니다." });
     }
   } catch (error) {
     logger.error(`동아리 검증 과정 중 실패 ${error.message}`, { error });

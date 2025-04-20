@@ -31,8 +31,18 @@ export const userScheduleRepository = {
     });
   },
 
-  createUserSchedule: async (scheduleData) => {
-    return await prisma.userSchedule.create({ data: scheduleData });
+  createUserSchedule: async (data) => {
+    return await prisma.userSchedule.create({
+      data: {
+        user_id: data.user_id,
+        user_schedule_start: data.user_schedule_start,
+        user_schedule_end: data.user_schedule_end,
+        user_schedule_title: data.user_schedule_title,
+        user_schedule_place: data.user_schedule_place,
+        user_schedule_participants: data.user_schedule_participants,
+        is_public: data.is_public,
+      },
+    });
   },
 
   deleteUserSchedule: async (userScheduleId) => {
@@ -41,10 +51,17 @@ export const userScheduleRepository = {
     });
   },
 
-  updateUserSchedule: async (userScheduleId, scheduleData) => {
+  updateUserSchedule: async (userScheduleId, data) => {
     return await prisma.userSchedule.update({
       where: { user_schedule_id: Number(userScheduleId) },
-      data: scheduleData,
+      data: {
+        user_schedule_start: data.user_schedule_start,
+        user_schedule_end: data.user_schedule_end,
+        user_schedule_title: data.user_schedule_title,
+        user_schedule_place: data.user_schedule_place,
+        user_schedule_participants: data.user_schedule_participants,
+        is_public: data.is_public,
+      },
     });
   },
 };

@@ -74,8 +74,8 @@ export const clubScheduleService = {
     };
   },
 
-  addClubSchedule: async ({ clubId, dto }) => {
-    return await clubScheduleRepository.createclubSchedule({
+  addClubSchedule: async (clubId, dto) => {
+    return await clubScheduleRepository.createClubSchedule({
       club_id: Number(clubId),
       ...dto,
     });
