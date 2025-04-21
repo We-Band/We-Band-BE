@@ -18,7 +18,8 @@ const app = express();
 
 const corsOptions = {
   origin: [
-    "http://localhost:5173", // 프론트엔드 로컬 환경
+    "http://localhost:3000", // 또 다른 로컬 포트
+    "https://we-band.vercel.app/", // 배포된 프론트 주소
   ],
   credentials: true, // 쿠키 및 인증 헤더 허용
   allowedHeaders: ["Content-Type", "Authorization", "x-access-token"],
