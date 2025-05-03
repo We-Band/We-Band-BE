@@ -1,3 +1,4 @@
+import { getMyClubs } from "../controllers/clubControllers.js";
 import { clubRepository } from "../repositories/clubRepository.js";
 import { logger } from "../utils/logger.js";
 
@@ -66,5 +67,11 @@ export const ClubService = {
 
     logger.debug("clubinfo, members객체 생성 성공");
     return { clubInfo, members };
+  },
+
+  getMyClubs: async (userId) => {
+    const myClubs = await clubRepository.getMyClubs(userId);
+    logger.debug("내 동아리 목록 조회 성공");
+    return myClubs;
   },
 };

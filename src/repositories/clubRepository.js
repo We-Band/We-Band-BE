@@ -80,4 +80,21 @@ export const clubRepository = {
       },
     });
   },
+
+  getMyClubs: async (userId) => {
+    return await prisma.clubMember.findMany({
+      where: { user_id: userId },
+      select: {
+        club: {
+          select: {
+            club_id: true,
+            club_name: true,
+            club_code: true,
+            member_count: true,
+            created_at: true,
+          },
+        },
+      },
+    });
+  },
 };
