@@ -14,7 +14,9 @@ export const joinClub = async (req, res) => {
       .json({ message: "동아리에 성공적으로 가입했습니다." });
   } catch (error) {
     logger.error(`동아리 가입 실패: ${error.message}`, { error });
-    return res.status(500).json({ message: "서버 오류가 발생했습니다." });
+    return res
+      .status(500)
+      .json({ message: `동아리 가입 실패: ${error.message}` });
   }
 };
 
@@ -29,7 +31,9 @@ export const quitClub = async (req, res) => {
     return res.status(200).json({ message: "동아리 탈퇴를 성공했습니다." });
   } catch (error) {
     logger.error(`동아리 탈퇴 실패: ${error.message}`, { error });
-    return res.status(500).json({ message: "서버 오류가 발생했습니다." });
+    return res
+      .status(500)
+      .json({ message: `동아리 탈퇴 실패: ${error.message}` });
   }
 };
 
@@ -44,7 +48,9 @@ export const kickMember = async (req, res) => {
     return res.status(200).json({ message: "회원 강퇴를 성공했습니다." });
   } catch (error) {
     logger.error(`동아리 추방 실패: ${error.message}`, { error });
-    return res.status(500).json({ message: "서버 오류가 발생했습니다." });
+    return res
+      .status(500)
+      .json({ message: `동아리 추방 실패: ${error.message}` });
   }
 };
 
@@ -59,7 +65,9 @@ export const changeCode = async (req, res) => {
     logger.error(`동아리 가입 코드 변경 중 오류 발생 ${error.message}`, {
       error,
     });
-    return res.status(500).json({ message: "서버 오류가 발생했습니다." });
+    return res
+      .status(500)
+      .json({ message: `동아리 가입 코드 변경 중 오류 발생 ${error.message}` });
   }
 };
 
@@ -74,7 +82,9 @@ export const changeLeader = async (req, res) => {
     return res.status(200).json({ message: "동아리 회장이 변경 되었습니다." });
   } catch (error) {
     logger.error(`동아리 회장 변경 중 오류 발생: ${error.message}`, { error });
-    return res.status(500).json({ message: "서버 오류가 발생했습니다." });
+    return res
+      .status(500)
+      .json({ message: `동아리 회장 변경 중 오류 발생: ${error.message}` });
   }
 };
 
@@ -94,6 +104,19 @@ export const viewClub = async (req, res) => {
     logger.error(`동아리 목록 조회 검증 실패: ${error.message}`, { error });
     return res
       .status(500)
-      .json({ message: "동아리 조회 중 오류가 발생했습니다." });
+      .json({ message: `동아리 목록 조회 검증 실패: ${error.message}` });
+  }
+};
+
+export const getMyClubs = async (req, res) => {
+  try {
+    const userId = req.user.user_id;
+    const clubs = await ClubService.getMyClubs(userId);
+    return res.status(200).json(clubs);
+  } catch (error) {
+    logger.error(`내 동아리 조회 중 오류 발생: ${error.message}`, { error });
+    return res
+      .status(500)
+      .json({ message: `내 동아리 조회 중 오류 발생: ${error.message}` });
   }
 };

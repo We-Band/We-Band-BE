@@ -12,7 +12,9 @@ import {
   kickMember,
   changeCode,
   changeLeader,
+  getMyClubs,
 } from "../controllers/clubControllers.js";
+import { get } from "http";
 
 const router = express.Router();
 
@@ -35,5 +37,7 @@ router.post(
 router.patch("/:clubId/setting", verifyClub, isLeader, changeCode); //동아리 가입 코드 변경
 
 router.patch("/:clubId/leader", verifyClub, isLeader, changeLeader); //동아리 회장 변경
+
+router.get("/getclubs/:userId", getMyClubs); //내 동아리 조회
 
 export default router;
